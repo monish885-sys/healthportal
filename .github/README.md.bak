@@ -1,0 +1,223 @@
+# 🏥 Health Portal - Syndromic Surveillance System
+
+[![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
+[![Express.js](https://img.shields.io/badge/Express.js-4.18+-blue.svg)](https://expressjs.com/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-6.0+-green.svg)](https://www.mongodb.com/)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+A comprehensive healthcare data management system with ML-powered syndromic surveillance capabilities. This system provides real-time analysis of patient symptoms to help healthcare professionals identify potential health threats and provide appropriate care.
+
+## ✨ Features
+
+### 🧠 ML-Powered Analysis
+- **Real-time Risk Scoring**: 0-100% risk assessment
+- **Syndrome Prediction**: Respiratory, Gastrointestinal, Cardiac, Neurological
+- **Confidence Levels**: AI confidence in predictions
+- **Smart Recommendations**: Personalized care suggestions
+- **Flagging System**: Automatic high-risk case identification
+
+### 🔐 Security & Authentication
+- JWT-based authentication
+- Password hashing with bcrypt
+- Input validation and sanitization
+- Rate limiting and CORS protection
+- Role-based access control
+
+### 📊 Comprehensive Dashboard
+- Interactive symptom reporting
+- Real-time ML analysis display
+- Patient history tracking
+- Surveillance data visualization
+- Trend analysis and alerts
+
+### 🚀 Modern Tech Stack
+- **Backend**: Node.js, Express.js, MongoDB
+- **Frontend**: HTML5, CSS3, JavaScript (ES6+)
+- **ML Engine**: Rule-based analysis with extensible architecture
+- **Security**: Helmet, bcrypt, express-validator
+- **Documentation**: Comprehensive guides and API docs
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Node.js (v14 or higher)
+- MongoDB
+- npm or yarn
+
+### Installation
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/monish885-sys/healthportal.git
+   cd healthportal
+   ```
+
+2. **Start the application:**
+   ```bash
+   ./scripts/start.sh
+   ```
+
+3. **Access the application:**
+   - **Main App**: http://localhost:3000
+   - **Test Login**: http://localhost:3000/test-login.html
+
+### Default Login Credentials
+- **Email**: `john.doe@example.com`
+- **Password**: `SecurePass123!`
+
+## 📁 Project Structure
+
+```
+health-portal/
+├── backend/                 # Node.js/Express.js Backend
+│   ├── models/             # MongoDB Schemas
+│   ├── middleware/         # Express Middleware
+│   ├── routes/            # API Routes
+│   ├── services/          # ML Analysis Service
+│   ├── data/              # Training Data
+│   └── scripts/           # Utility Scripts
+├── frontend/              # Web Interface
+│   └── public/            # HTML/CSS/JS Files
+├── scripts/               # Project Scripts
+├── docs/                  # Documentation
+└── .github/               # GitHub Configuration
+```
+
+## 🧠 ML Analysis Process
+
+### 1. Feature Extraction
+- Extract symptoms from patient input
+- Process vital signs data
+- Analyze additional information
+- Generate feature vector
+
+### 2. Risk Scoring
+- Base risk: 10%
+- Symptom-based additions (fever: +30%, chest pain: +40%)
+- Vital sign adjustments (high temp: +20%, low O2: +30%)
+- Cap at 100%
+
+### 3. Syndrome Prediction
+- **Respiratory**: fever + cough + shortness of breath
+- **Gastrointestinal**: nausea + vomiting + diarrhea
+- **Cardiac**: chest pain + heart palpitations
+- **Neurological**: headache + dizziness + neck stiffness
+
+### 4. Recommendation Generation
+- Risk-based recommendations
+- Syndrome-specific advice
+- Symptom-specific care instructions
+- Emergency protocols
+
+## 📊 API Endpoints
+
+### Authentication
+- `POST /api/auth/login` - User login
+- `POST /api/auth/register` - User registration
+- `POST /api/auth/refresh` - Refresh token
+
+### Patient Management
+- `GET /api/patients/dashboard` - Patient dashboard
+- `POST /api/patients/symptoms` - Submit symptoms
+- `GET /api/patients/symptoms` - Get symptom history
+
+### ML Analysis
+- `POST /api/ml/analyze` - Analyze symptoms
+- `GET /api/ml/surveillance` - Surveillance data
+- `GET /api/ml/trends` - Trend analysis
+
+## 🛠️ Development
+
+### Running in Development Mode
+```bash
+cd backend
+npm run dev
+```
+
+### Testing
+```bash
+npm test
+```
+
+### Linting
+```bash
+npm run lint
+npm run lint:fix
+```
+
+## 📈 ML Model Training
+
+To train a new ML model:
+```bash
+npm run train
+```
+
+## 🔧 Configuration
+
+Key environment variables in `.env`:
+- `MONGODB_URI` - MongoDB connection string
+- `JWT_SECRET` - JWT signing secret
+- `PORT` - Server port (default: 3000)
+- `NODE_ENV` - Environment (development/production)
+
+## 📱 Screenshots
+
+### Dashboard
+![Dashboard](https://via.placeholder.com/800x400/007bff/ffffff?text=Health+Portal+Dashboard)
+
+### ML Analysis
+![ML Analysis](https://via.placeholder.com/800x400/28a745/ffffff?text=ML+Analysis+Results)
+
+### Symptom Reporting
+![Symptom Reporting](https://via.placeholder.com/800x400/ffc107/000000?text=Symptom+Reporting+Form)
+
+## 🚨 Security Features
+
+- JWT-based authentication
+- Password hashing with bcrypt
+- Input validation and sanitization
+- Rate limiting
+- CORS protection
+- Helmet security headers
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## 📞 Support
+
+For support and questions:
+- Create an issue in this repository
+- Contact the development team
+- Check the documentation in the `docs/` folder
+
+## 🎯 Roadmap
+
+- [ ] Mobile app development
+- [ ] Advanced ML models with TensorFlow.js
+- [ ] Real-time notifications
+- [ ] Integration with EHR systems
+- [ ] Advanced analytics dashboard
+- [ ] Multi-language support
+
+## 🙏 Acknowledgments
+
+- Healthcare professionals for domain expertise
+- Open source community for amazing tools
+- Contributors and testers
+
+---
+
+**Health Portal Team** - Building the future of healthcare surveillance 🏥✨
+
+[![GitHub stars](https://img.shields.io/github/stars/monish885-sys/healthportal.svg?style=social&label=Star)](https://github.com/monish885-sys/healthportal)
+[![GitHub forks](https://img.shields.io/github/forks/monish885-sys/healthportal.svg?style=social&label=Fork)](https://github.com/monish885-sys/healthportal)
+[![GitHub watchers](https://img.shields.io/github/watchers/monish885-sys/healthportal.svg?style=social&label=Watch)](https://github.com/monish885-sys/healthportal)
