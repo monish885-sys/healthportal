@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: health-portal-api
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: MONGODB_URI
+        fromDatabase:
+          name: health-portal-db
+          property: connectionString
+    healthCheckPath: /api
+
+databases:
+  - name: health-portal-db
+    plan: free
+    databaseName: health-portal
