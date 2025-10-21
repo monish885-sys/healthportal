@@ -2,6 +2,7 @@ const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const mongoose = require('mongoose');
 const PrescriptionUpload = require('../Models/PrescriptionUpload');
 const Prescription = require('../Models/prescription');
 const PrescriptionParsingAgent = require('../services/PrescriptionParsingAgent');
@@ -173,7 +174,12 @@ router.get('/prescriptions/:patientId', async (req, res) => {
     const { patientId } = req.params;
     const { uploadedBy, limit = 20, offset = 0 } = req.query;
 
-    let query = { patientId: patientId, status: 'active' };
+    // Validate ObjectId format
+    if (!mongoose.Types.ObjectId.isValid(patientId)) {
+      return res.status(400).json({ msg: 'Invalid patient ID format' });
+    }
+
+    let query = { patientId: new mongoose.Types.ObjectId(patientId), status: 'active' };
     if (uploadedBy) {
       query.uploadedBy = uploadedBy;
     }
@@ -306,8 +312,13 @@ router.get('/prescription-stats/:patientId', async (req, res) => {
   try {
     const { patientId } = req.params;
 
+    // Validate ObjectId format
+    if (!mongoose.Types.ObjectId.isValid(patientId)) {
+      return res.status(400).json({ msg: 'Invalid patient ID format' });
+    }
+
     const stats = await PrescriptionUpload.aggregate([
-      { $match: { patientId: mongoose.Types.ObjectId(patientId), status: 'active' } },
+      { $match: { patientId: new mongoose.Types.ObjectId(patientId), status: 'active' } },
       {
         $group: {
           _id: null,
