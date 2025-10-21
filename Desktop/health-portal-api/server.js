@@ -10,6 +10,7 @@ const adminDiseaseRoutes = require('./routes/adminDiseaseRoutes');
 const authRoutes = require('./routes/authRoutes');
 const healthcareRoutes = require('./routes/healthcareRoutes');
 const fileRoutes = require('./routes/fileRoutes');
+const prescriptionRoutes = require('./routes/prescriptionRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -54,6 +55,7 @@ app.use('/api/admin/disease', adminDiseaseRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/healthcare', healthcareRoutes);
 app.use('/api/healthcare', fileRoutes);
+app.use('/api/healthcare', prescriptionRoutes);
 
 // Serve main portal page
 app.get('/', (req, res) => {
