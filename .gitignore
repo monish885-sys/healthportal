@@ -1,0 +1,43 @@
+# Dependencies
+node_modules/
+
+# Environment and secrets
+.env
+.env.local
+.env.*.local
+
+# Runtime artifacts
+sessions/
+*.log
+server.log
+server_output.log
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+temp_*.py
+
+# Uploads (keep structure)
+uploads/**
+!uploads/reports/.gitkeep
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+
+# Test / coverage
+coverage/
+.nyc_output/
+
+# Build outputs
+outputs/
+
+# Database backups (local only)
+mongodb-backup/
+
+# Misc
+Untitled-1

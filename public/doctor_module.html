@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Doctor Portal - v30</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <style>
+    body {
+      background: #f5f7f4;
+      overflow-x: hidden;
+    }
+    .sidebar {
+      background: #14532d;
+      color: white;
+      min-height: 100vh;
+      width: 250px;
+      position: fixed;
+      top: 0;
+      left: -250px;
+      transition: 0.3s;
+      padding-top: 20px;
+      z-index: 1000;
+    }
+    .sidebar a {
+      color: white;
+      display: block;
+      text-decoration: none;
+      padding: 12px 20px;
+      margin: 5px 10px;
+      border-radius: 5px;
+    }
+    .sidebar a:hover {
+      background: #166534;
+    }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #fff;
+      padding: 10px 20px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    }
+    .burger-btn {
+      font-size: 24px;
+      cursor: pointer;
+    }
+    .content {
+      padding: 20px;
+      margin-left: 0;
+    }
+    .section-title {
+      font-weight: 600;
+      color: #14532d;
+      margin-bottom: 20px;
+    }
+    .card {
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+    .metric {
+      font-weight: 700;
+      font-size: 1.8rem;
+    }
+    .upcoming-list {
+      padding-left: 20px;
+    }
+    .arrow-btn {
+      cursor: pointer;
+      font-size: 18px;
+      color: #14532d;
+      margin-left: 8px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Sidebar -->
+  <div id="sidebar" class="sidebar">
+    <h4 class="text-center">Doctor Panel (ID: D001)</h4>
+    <a href="#" onclick="showSection('dashboard')">Dashboard</a>
+    <a href="#" onclick="showSection('appointments')">Appointments</a>
+    <a href="#" onclick="showSection('reschedulerequests')">Reschedule Requests</a>
+    <a href="#" onclick="showSection('mypatients')">My Patients</a>
+    <a href="#" onclick="showSection('prescriptions')">Prescriptions & Reports</a>
+    <a href="#" onclick="showSection('communication')">Communication</a>
+  </div>
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <span class="burger-btn" onclick="toggleSidebar()">&#9776;</span>
+    <strong>Doctor Portal</strong>
+  </div>
+
+  <div class="content">
+
+    <!-- Dashboard -->
+    <div id="dashboard" class="content-section">
+      <h3 class="section-title">Dashboard</h3>
+      <div class="row row-cols-1 row-cols-md-3 g-4 mb-3">
+        <div class="col">
+          <div class="card h-100 p-3">
+            <h5>
+              Upcoming Appointments
+              <span id="toggleAppt" class="arrow-btn" onclick="toggleUpcoming()">&nbsp;&#9660;</span>
+            </h5>
+            <div id="earliestApptBox"></div>
+            <div id="moreAppointments" style="display:none;">
+              <hr />
+              <ul class="upcoming-list mb-1" id="upcomingListMore"></ul>
+            </div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="card h-100 p-3">
+            <h5>No. of Patients Treated</h5>
+            <div class="metric" id="patientsMetric">0</div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="card h-100 p-3">
+            <h5>Cases by Symptom</h5>
+            <canvas id="casesChart" height="160"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Appointments -->
+    <div id="appointments" class="content-section" style="display:none;">
+      <h3 class="section-title">Appointments</h3>
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>Patient ID</th>
+            <th>Name</th>
+            <th>Gender</th>
+            <th>Date & Time</th>
+            <th>Symptoms</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="appointmentTable"></tbody>
+      </table>
+    </div>
+
+    <!-- Reschedule Requests -->
+    <div id="reschedulerequests" class="content-section" style="display:none;">
+      <h3 class="section-title">Reschedule Requests</h3>
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>PID</th>
+            <th>Name</th>
+            <th>Gender</th>
+            <th>Symptoms</th>
+            <th>Original</th>
+            <th>Requested</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="rescheduleTable"></tbody>
+      </table>
+    </div>
+
+    <!-- My Patients -->
+    <div id="mypatients" class="content-section" style="display:none;">
+      <h3 class="section-title">My Patients</h3>
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>PID</th>
+            <th>Name</th>
+            <th>Gender</th>
+            <th>Since</th>
+            <th>Past Appointments</th>
+          </tr>
+        </thead>
+        <tbody id="patientsTable"></tbody>
+      </table>
+      <button class="btn btn-primary mt-2" onclick="addPatient()">+ Add Patient</button>
+      <button class="btn btn-warning mt-2" onclick="openPatientRequests()">View Requests</button>
+    </div>
+
+    <!-- Prescriptions & Reports -->
+    <div id="prescriptions" class="content-section" style="display:none;">
+      <h3 class="section-title">Prescriptions & Reports</h3>
+      <button class="btn btn-primary mb-2" onclick="openUpload('Prescription')">Upload Prescription</button>
+      <button class="btn btn-success mb-2" onclick="openUpload('Report')">Upload Report</button>
+    </div>
+
+    <!-- Communication -->
+    <div id="communication" class="content-section" style="display:none;">
+      <h3 class="section-title">Communication</h3>
+      <button class="btn btn-warning">Start Chat</button>
+      <button class="btn btn-danger">Start Video Consultation</button>
+    </div>
+  </div>
+
+  <!-- Modals -->
+  <div class="modal fade" id="rescheduleModal"><div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header"><h5>Reschedule Appointment</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+      <input type="date" id="newDate" class="form-control mb-2" />
+      <input type="time" id="newTime" class="form-control mb-2" />
+    </div>
+    <div class="modal-footer"><button class="btn btn-primary" onclick="confirmDoctorReschedule()">Confirm</button></div>
+  </div></div></div>
+
+  <div class="modal fade" id="declineModal"><div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header"><h5>Propose New Date</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+      <input type="date" id="declineDate" class="form-control mb-2" />
+      <input type="time" id="declineTime" class="form-control mb-2" />
+    </div>
+    <div class="modal-footer"><button class="btn btn-primary" onclick="confirmDecline()">Submit</button></div>
+  </div></div></div>
+
+  <div class="modal fade" id="pastModal"><div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title">Past Appointments</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body" id="pastContent"></div>
+  </div></div></div>
+
+  <div class="modal fade" id="patientRequestsModal"><div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header"><h5>Patient Requests</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body" id="patientRequestsBody"></div>
+  </div></div></div>
+
+  <div class="modal fade" id="uploadModal"><div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header"><h5 id="uploadTitle"></h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+      <input type="file" id="uploadFile" class="form-control mb-2" accept=".pdf,.jpg,.jpeg,.png" />
+      <input type="text" id="uploadPid" placeholder="Enter Patient ID (P001, P002)" class="form-control mb-2" />
+    </div>
+    <div class="modal-footer"><button class="btn btn-primary" onclick="confirmUpload()">Send</button></div>
+  </div></div></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    let appointments = [
+      { id: "P001", name: "Jane Doe", gender: "Female", date: "2025-08-20", time: "10:30", symptoms: "Chest pain" },
+      { id: "P002", name: "Mark Lee", gender: "Male", date: "2025-08-25", time: "11:30", symptoms: "Skin rash" },
+      { id: "P003", name: "Amit Patel", gender: "Male", date: "2025-08-18", time: "12:00", symptoms: "Fever" },
+      { id: "P004", name: "Nina Rao", gender: "Female", date: "2025-08-23", time: "9:45", symptoms: "Chest pain" },
+      { id: "P005", name: "Sara Green", gender: "Female", date: "2025-08-22", time: "15:10", symptoms: "Migraine" }
+    ];
+    let rescheduleRequests = [
+      { id: "P002", name: "Mark Lee", gender: "Male", symptoms: "Skin rash", original: "2025-08-25 11:30", requested: "2025-08-26 10:30", apptIndex: 1 },
+      { id: "P004", name: "Nina Rao", gender: "Female", symptoms: "Chest pain", original: "2025-08-23 09:45", requested: "2025-08-21 09:00", apptIndex: 3 },
+      { id: "P005", name: "Sara Green", gender: "Female", symptoms: "Migraine", original: "2025-08-22 15:10", requested: "2025-08-20 10:00", apptIndex: 4 }
+    ];
+
+    let patients = [
+      { pid: "P001", name: "Jane Doe", gender: "Female", since: "2023-08-15", appts: ["12 May 2024 - Chest pain", "10 Jul 2024 - Follow-up"] },
+      { pid: "P002", name: "Mark Lee", gender: "Male", since: "2024-04-02", appts: ["3 Jun 2024 - Skin rash"] }
+    ];
+    let patientRequests = [
+      { pid: "P006", name: "Meera Sharma", gender: "Female" },
+      { pid: "P007", name: "David Clark", gender: "Male" }
+    ];
+
+    let rescheduleIndex = null,
+      declineIndex = null,
+      uploadType = "";
+    let dashboardApptExpanded = false;
+
+    function renderAppointments() {
+      document.getElementById(
+        "appointmentTable"
+      ).innerHTML = appointments
+        .map(
+          (a, i) => `<tr>
+      <td>${a.id}</td><td>${a.name}</td><td>${a.gender}</td><td>${a.date} ${a.time}</td><td>${a.symptoms}</td>
+      <td>
+        <button class="btn btn-sm btn-success" onclick="openDoctorReschedule(${i})">Reschedule</button>
+      </td>
+    </tr>`
+        )
+        .join("");
+      let pids = new Set(appointments.map((a) => a.id));
+      document.getElementById("patientsMetric").innerText = pids.size;
+
+      renderUpcomingDashboard();
+      renderPieChart();
+    }
+
+    function renderUpcomingDashboard() {
+      let sorted = [...appointments].sort((a, b) => {
+        let ad = new Date(a.date + "T" + a.time),
+          bd = new Date(b.date + "T" + b.time);
+        return ad - bd;
+      });
+      let earliest = sorted[0];
+      document.getElementById("earliestApptBox").innerHTML = `
+      <div><b>${earliest.date}, ${earliest.time}</b><br>
+      ${earliest.name} (${earliest.id})<br>
+      <span class='text-muted'>${earliest.symptoms}</span></div>
+    `;
+      let rest = sorted.slice(1);
+      document.getElementById("upcomingListMore").innerHTML = rest
+        .map(
+          (a) =>
+            `<li>${a.date} ${a.time} — <b>${a.name}</b> (${a.id}) - ${a.symptoms}</li>`
+        )
+        .join("");
+      document.getElementById("moreAppointments").style.display = dashboardApptExpanded
+        ? "block"
+        : "none";
+      document.getElementById("toggleAppt").innerHTML = dashboardApptExpanded
+        ? "&nbsp;&#9650;"
+        : "&nbsp;&#9660;";
+    }
+
+    function toggleUpcoming() {
+      dashboardApptExpanded = !dashboardApptExpanded;
+      renderUpcomingDashboard();
+    }
+
+    function renderPieChart() {
+      let counts = {};
+      appointments.forEach((a) => {
+        counts[a.symptoms] = (counts[a.symptoms] || 0) + 1;
+      });
+      let labels = Object.keys(counts),
+        data = Object.values(counts);
+      if (window.casesChartInstance) window.casesChartInstance.destroy();
+      let ctx = document.getElementById("casesChart").getContext("2d");
+      window.casesChartInstance = new Chart(ctx, {
+        type: "pie",
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: "Cases",
+              data: data,
+              backgroundColor: [
+                "#166534",
+                "#2563eb",
+                "#ef4444",
+                "#eab308",
+                "#d946ef",
+                "#0891b2",
+              ],
+            },
+          ],
+        },
+        options: { plugins: { legend: { display: true, position: "bottom" } } },
+      });
+    }
+
+    function renderReschedules() {
+      document.getElementById(
+        "rescheduleTable"
+      ).innerHTML = rescheduleRequests
+        .map(
+          (r, i) => `<tr>
+        <td>${r.id}</td><td>${r.name}</td><td>${r.gender}</td><td>${r.symptoms}</td><td>${r.original}</td><td>${r.requested}</td>
+        <td><button class="btn btn-sm btn-success" onclick="approveRequest(${i})">Approve</button>
+            <button class="btn btn-sm btn-danger" onclick="openDecline(${i})">Decline</button></td></tr>`
+        )
+        .join("");
+    }
+
+    function renderPatients() {
+      document.getElementById(
+        "patientsTable"
+      ).innerHTML = patients
+        .map(
+          (p, i) => `<tr>
+        <td>${p.pid}</td><td>${p.name}</td><td>${p.gender}</td><td>${p.since}</td>
+        <td><button class="btn btn-sm btn-info" onclick="viewPast(${i})">View</button></td></tr>`
+        )
+        .join("");
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+      renderAppointments();
+      renderReschedules();
+      renderPatients();
+    });
+
+    function openDoctorReschedule(i) {
+      rescheduleIndex = i;
+      let appt = appointments[i];
+      let base = new Date(appt.date);
+      let min = new Date(base);
+      min.setDate(base.getDate() - 2);
+      let max = new Date(base);
+      max.setDate(base.getDate() + 2);
+      document.getElementById("newDate").min = min.toISOString().split("T")[0];
+      document.getElementById("newDate").max = max.toISOString().split("T")[0];
+      document.getElementById("newDate").value = appt.date;
+      document.getElementById("newTime").value = appt.time;
+      new bootstrap.Modal(document.getElementById("rescheduleModal")).show();
+    }
+
+    function confirmDoctorReschedule() {
+      let d = document.getElementById("newDate").value,
+        t = document.getElementById("newTime").value;
+      if (d && t) {
+        appointments[rescheduleIndex].date = d;
+        appointments[rescheduleIndex].time = t;
+        renderAppointments();
+        renderUpcomingDashboard();
+        renderPieChart();
+        alert("Notification sent to patient!");
+        bootstrap.Modal.getInstance(document.getElementById("rescheduleModal")).hide();
+      } else alert("Select date/time");
+    }
+
+    function approveRequest(i) {
+      let req = rescheduleRequests[i];
+      let [d, t] = req.requested.split(" ");
+      // Update appointment or add if not present (usually present, but just in case)
+      if (appointments[req.apptIndex]) {
+        appointments[req.apptIndex].date = d;
+        appointments[req.apptIndex].time = t;
+      } else {
+        // If somehow missing, add new appointment entry
+        appointments.push({
+          id: req.id,
+          name: req.name,
+          gender: req.gender || "N/A",
+          date: d,
+          time: t,
+          symptoms: req.symptoms || "",
+        });
+      }
+      rescheduleRequests.splice(i, 1);
+      renderAppointments();
+      renderReschedules();
+      renderUpcomingDashboard();
+      renderPieChart();
+      showSection("appointments");
+      alert("Reschedule approved & appointment updated!");
+    }
+
+    function openDecline(i) {
+      declineIndex = i;
+      let req = rescheduleRequests[i];
+      let orig = new Date(req.original.split(" ")[0]);
+      let min = new Date(orig);
+      min.setDate(orig.getDate() - 2);
+      let max = new Date(orig);
+      max.setDate(orig.getDate() + 3);
+      document.getElementById("declineDate").min = min.toISOString().split("T")[0];
+      document.getElementById("declineDate").max = max.toISOString().split("T")[0];
+      document.getElementById("declineDate").value = "";
+      document.getElementById("declineTime").value = "";
+      new bootstrap.Modal(document.getElementById("declineModal")).show();
+    }
+
+    function confirmDecline() {
+      let d = document.getElementById("declineDate").value,
+        t = document.getElementById("declineTime").value;
+      if (d && t) {
+        let req = rescheduleRequests[declineIndex];
+        let idx = req.apptIndex;
+        appointments[idx].date = d;
+        appointments[idx].time = t;
+        rescheduleRequests.splice(declineIndex, 1);
+        renderAppointments();
+        renderReschedules();
+        renderUpcomingDashboard();
+        renderPieChart();
+        bootstrap.Modal.getInstance(document.getElementById("declineModal")).hide();
+        showSection("appointments");
+        alert("Reschedule declined, new proposal sent & appointment updated!");
+      } else alert("Select date/time");
+    }
+
+    function addPatient() {
+      const nextNum = patients.length + 1;
+      const newPid = "P" + ("00" + nextNum).slice(-3);
+      patients.push({
+        pid: newPid,
+        name: "New Patient",
+        gender: "N/A",
+        since: new Date().toISOString().split("T")[0],
+        appts: [],
+      });
+      renderPatients();
+      alert("Added " + newPid);
+    }
+    function viewPast(i) {
+      document.getElementById("pastContent").innerHTML = patients[i].appts.length
+        ? `<ul>${patients[i].appts.map((a) => `<li>${a}</li>`).join("")}</ul>`
+        : "No past appointments.";
+      new bootstrap.Modal(document.getElementById("pastModal")).show();
+    }
+    function openPatientRequests() {
+      document.getElementById("patientRequestsBody").innerHTML = patientRequests
+        .map(
+          (r, i) => `<div class="d-flex justify-content-between border p-2 mb-1">
+     <span>${r.name} (${r.gender}) - ${r.pid}</span>
+     <div><button class="btn btn-sm btn-success" onclick="approvePatientReq(${i})">Approve</button>
+     <button class="btn btn-sm btn-danger" onclick="declinePatientReq(${i})">Decline</button></div></div>`
+        )
+        .join("");
+      new bootstrap.Modal(document.getElementById("patientRequestsModal")).show();
+    }
+    function approvePatientReq(i) {
+      patients.push({ ...patientRequests[i], since: new Date().toISOString().split("T")[0], appts: [] });
+      alert("Approved " + patientRequests[i].pid);
+      patientRequests.splice(i, 1);
+      renderPatients();
+      openPatientRequests();
+    }
+    function declinePatientReq(i) {
+      alert("Declined " + patientRequests[i].pid);
+      patientRequests.splice(i, 1);
+      openPatientRequests();
+    }
+
+    function openUpload(type) {
+      uploadType = type;
+      document.getElementById("uploadTitle").innerText = "Upload " + type;
+      document.getElementById("uploadFile").value = "";
+      document.getElementById("uploadPid").value = "";
+      new bootstrap.Modal(document.getElementById("uploadModal")).show();
+    }
+    function confirmUpload() {
+      let file = document.getElementById("uploadFile").files[0];
+      let pid = document.getElementById("uploadPid").value.trim();
+      let pattern = /^P\d{3}$/;
+      if (!file) {
+        alert("Please select a file.");
+        return;
+      }
+      if (!pattern.test(pid)) {
+        alert("Invalid Patient ID format. Please use P001, P002, etc.");
+        return;
+      }
+      alert(uploadType + " successfully sent to " + pid);
+      bootstrap.Modal.getInstance(document.getElementById("uploadModal")).hide();
+    }
+
+    function toggleSidebar() {
+      let bar = document.getElementById("sidebar");
+      bar.style.left = bar.style.left === "0px" ? "-250px" : "0px";
+    }
+    function closeSidebar() {
+      document.getElementById("sidebar").style.left = "-250px";
+    }
+    document.addEventListener("click", (e) => {
+      const sidebar = document.getElementById("sidebar"),
+        burger = document.querySelector(".burger-btn");
+      if (
+        sidebar.style.left === "0px" &&
+        !sidebar.contains(e.target) &&
+        !burger.contains(e.target)
+      ) {
+        closeSidebar();
+      }
+    });
+    function showSection(id) {
+      document.querySelectorAll(".content-section").forEach(
+        (sec) => (sec.style.display = "none")
+      );
+      document.getElementById(id).style.display = "block";
+      if (id === "dashboard") {
+        renderAppointments();
+      }
+      closeSidebar();
+    }
+  </script>
+</body>
+</html>

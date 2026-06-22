@@ -1,0 +1,35 @@
+{
+  "name": "health-portal-api",
+  "version": "3.0.0",
+  "description": "Health portal API with admin, doctor, and patient portals plus ML symptom analysis",
+  "main": "server.js",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "seed": "node scripts/seed.js",
+    "test": "NODE_ENV=test node --test tests/api.test.js"
+  },
+  "keywords": ["health", "portal", "api", "mongodb", "ml"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.2.1",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.5.2",
+    "express-session": "^1.18.2",
+    "helmet": "^8.2.0",
+    "mongoose": "^8.17.1",
+    "multer": "^2.0.2",
+    "nodemailer": "^8.0.1",
+    "session-file-store": "^1.5.0"
+  },
+  "devDependencies": {
+    "mongodb-memory-server": "^11.2.0",
+    "supertest": "^7.2.2"
+  }
+}

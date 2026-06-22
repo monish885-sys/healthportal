@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Health Portal - Secure Healthcare Access</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    .floating { animation: floating 3s ease-in-out infinite; }
+    @keyframes floating {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-12px); }
+    }
+    .fade-in { animation: fadeIn 0.6s ease-out; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .role-card {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      transition: all 0.25s ease;
+    }
+    .role-card:hover {
+      background: rgba(255, 255, 255, 0.25);
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    }
+  </style>
+</head>
+<body class="gradient-bg min-h-screen">
+  <div class="absolute inset-0 overflow-hidden pointer-events-none">
+    <div class="absolute -top-40 -right-40 w-80 h-80 bg-white opacity-10 rounded-full floating"></div>
+    <div class="absolute -bottom-40 -left-40 w-96 h-96 bg-white opacity-5 rounded-full floating" style="animation-delay: -1.5s;"></div>
+  </div>
+
+  <div class="relative z-10 min-h-screen flex flex-col items-center justify-center p-6">
+    <header class="text-center mb-10 fade-in">
+      <div class="inline-flex items-center justify-center w-20 h-20 bg-white bg-opacity-20 rounded-full mb-4">
+        <i class="fas fa-heartbeat text-4xl text-white"></i>
+      </div>
+      <h1 class="text-4xl md:text-5xl font-bold text-white mb-2">Health Portal</h1>
+      <p class="text-white text-opacity-90">Choose your role to sign in</p>
+    </header>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-3xl fade-in" style="animation-delay: 0.15s;">
+      <a href="/admin-login" class="role-card rounded-2xl p-8 text-center no-underline text-white block">
+        <div class="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
+          <i class="fas fa-user-shield text-2xl"></i>
+        </div>
+        <h2 class="text-xl font-semibold mb-2">Administrator</h2>
+        <p class="text-white text-opacity-85 text-sm">Manage users, doctors, and system settings</p>
+        <span class="inline-block mt-4 text-sm opacity-90"><i class="fas fa-arrow-right mr-1"></i> Admin Login</span>
+      </a>
+
+      <a href="/doctor-login" class="role-card rounded-2xl p-8 text-center no-underline text-white block">
+        <div class="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
+          <i class="fas fa-user-md text-2xl"></i>
+        </div>
+        <h2 class="text-xl font-semibold mb-2">Doctor</h2>
+        <p class="text-white text-opacity-85 text-sm">Manage patients, appointments, and prescriptions</p>
+        <span class="inline-block mt-4 text-sm opacity-90"><i class="fas fa-arrow-right mr-1"></i> Doctor Login</span>
+      </a>
+
+      <a href="/patient-login" class="role-card rounded-2xl p-8 text-center no-underline text-white block">
+        <div class="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
+          <i class="fas fa-user-injured text-2xl"></i>
+        </div>
+        <h2 class="text-xl font-semibold mb-2">Patient</h2>
+        <p class="text-white text-opacity-85 text-sm">View appointments, reports, and prescriptions</p>
+        <span class="inline-block mt-4 text-sm opacity-90"><i class="fas fa-arrow-right mr-1"></i> Patient Login</span>
+      </a>
+    </div>
+
+    <footer class="text-center mt-12 text-white text-opacity-60 text-sm fade-in" style="animation-delay: 0.3s;">
+      <p>&copy; 2024 Health Portal. Secure Healthcare Access.</p>
+    </footer>
+  </div>
+</body>
+</html>

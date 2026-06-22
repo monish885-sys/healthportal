@@ -1,0 +1,1884 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Portal - Health Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    
+    body { font-family: 'Inter', sans-serif; }
+    
+    .sidebar-transition { transition: all 0.3s ease-in-out; }
+    .card-hover { transition: all 0.3s ease; }
+    .card-hover:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1); }
+    .fade-in { animation: fadeIn 0.6s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .slide-in { animation: slideIn 0.5s ease-out; }
+    @keyframes slideIn { from { transform: translateX(-100%); } to { transform: translateX(0); } }
+    .form-input:focus { box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); border-color: #3b82f6; }
+    .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); transition: all 0.3s ease; }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3); }
+    .status-active { @apply bg-green-100 text-green-800; }
+    .status-pending { @apply bg-yellow-100 text-yellow-800; }
+    .status-inactive { @apply bg-red-100 text-red-800; }
+    .status-suspended { @apply bg-gray-100 text-gray-800; }
+    .chart-box { height: 260px; }
+  </style>
+</head>
+<body class="bg-gray-50">
+  <!-- Sidebar -->
+  <div id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg sidebar-transition transform -translate-x-full lg:translate-x-0">
+    <div class="flex items-center justify-between h-16 px-6 border-b border-gray-200">
+      <div class="flex items-center space-x-3">
+        <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+          <i class="fas fa-heartbeat text-white text-sm"></i>
+        </div>
+        <span class="text-xl font-bold text-gray-800">Health Portal</span>
+      </div>
+      <button id="closeSidebar" class="lg:hidden text-gray-500 hover:text-gray-700">
+        <i class="fas fa-times text-xl"></i>
+      </button>
+    </div>
+
+    <nav class="px-4 py-6 space-y-2">
+      <a href="#dashboard" class="nav-link active flex items-center space-x-3 px-4 py-3 text-gray-700 bg-blue-50 border-r-4 border-blue-500 rounded-r-lg">
+        <i class="fas fa-tachometer-alt w-5"></i>
+        <span>Dashboard</span>
+      </a>
+      <a href="#users" class="nav-link flex items-center space-x-3 px-4 py-3 text-gray-600 hover:bg-gray-50 hover:text-gray-700 rounded-lg transition-colors">
+        <i class="fas fa-users w-5"></i>
+        <span>Users</span>
+      </a>
+      <a href="#doctors" class="nav-link flex items-center space-x-3 px-4 py-3 text-gray-600 hover:bg-gray-50 hover:text-gray-700 rounded-lg transition-colors">
+        <i class="fas fa-user-md w-5"></i>
+        <span>Doctors</span>
+      </a>
+      <a href="#patients" class="nav-link flex items-center space-x-3 px-4 py-3 text-gray-600 hover:bg-gray-50 hover:text-gray-700 rounded-lg transition-colors">
+        <i class="fas fa-user-injured w-5"></i>
+        <span>Patients</span>
+      </a>
+      <a href="#disease-monitoring" class="nav-link flex items-center space-x-3 px-4 py-3 text-gray-600 hover:bg-gray-50 hover:text-gray-700 rounded-lg transition-colors">
+        <i class="fas fa-virus w-5"></i>
+        <span>Disease Monitoring</span>
+      </a>
+      <a href="#reports" class="nav-link flex items-center space-x-3 px-4 py-3 text-gray-600 hover:bg-gray-50 hover:text-gray-700 rounded-lg transition-colors">
+        <i class="fas fa-chart-bar w-5"></i>
+        <span>Reports</span>
+      </a>
+      <a href="#feedback-admin" class="nav-link flex items-center space-x-3 px-4 py-3 text-gray-600 hover:bg-gray-50 hover:text-gray-700 rounded-lg transition-colors">
+        <i class="fas fa-comment-dots w-5"></i>
+        <span>Feedback</span>
+      </a>
+    </nav>
+    
+    <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200">
+      <button id="logoutBtn" class="w-full flex items-center justify-center space-x-2 px-4 py-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Logout</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="lg:ml-64 min-h-screen">
+    <!-- Top Navigation -->
+    <header class="bg-white shadow-sm border-b border-gray-200">
+      <div class="flex items-center justify-between h-16 px-6">
+        <div class="flex items-center space-x-4">
+          <button id="menuBtn" class="lg:hidden text-gray-500 hover:text-gray-700">
+            <i class="fas fa-bars text-xl"></i>
+          </button>
+          <h1 class="text-2xl font-bold text-gray-800">Admin Portal</h1>
+        </div>
+        <div class="flex items-center space-x-4">
+          <div class="relative">
+            <button id="adminNotifBtn" onclick="toggleAdminNotifications()" class="flex items-center space-x-2 text-gray-600 hover:text-gray-800">
+              <i class="fas fa-bell"></i>
+              <span id="adminNotifCount" class="bg-red-500 text-white text-xs rounded-full min-w-5 h-5 px-1 flex items-center justify-center">0</span>
+            </button>
+            <div id="adminNotifPanel" style="display:none;" class="absolute right-0 mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-20 p-3">
+              <h4 class="text-sm font-semibold text-gray-800 mb-2">Admin Notifications</h4>
+              <ul id="adminNotifList" class="space-y-2 text-sm text-gray-600"></ul>
+            </div>
+          </div>
+          <div class="flex items-center space-x-3">
+            <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+              <i class="fas fa-user text-white text-sm"></i>
+            </div>
+            <span class="text-gray-700 font-medium">Admin</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Page Content -->
+    <main class="p-6">
+      <!-- Dashboard Section -->
+      <section id="dashboard" class="section active fade-in">
+        <div class="mb-8">
+          <h2 class="text-3xl font-bold text-gray-800 mb-2">Dashboard Overview</h2>
+          <p class="text-gray-600">Monitor your health portal's key metrics and activities</p>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-gray-600">Total Users</p>
+                <p class="text-3xl font-bold text-gray-800" id="totalUsers">0</p>
+              </div>
+              <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-users text-blue-600 text-xl"></i>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-gray-600">Active Doctors</p>
+                <p class="text-3xl font-bold text-gray-800" id="totalDoctors">0</p>
+              </div>
+              <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-user-md text-green-600 text-xl"></i>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-gray-600">Total Patients</p>
+                <p class="text-3xl font-bold text-gray-800" id="totalPatients">0</p>
+              </div>
+              <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-user-injured text-purple-600 text-xl"></i>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
+            <div class="flex items-center justify-between">
+        <div>
+                <p class="text-sm font-medium text-gray-600">System Status</p>
+                <p class="text-3xl font-bold text-green-600">Online</p>
+              </div>
+              <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-check-circle text-green-600 text-xl"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <div class="bg-white rounded-xl shadow-sm p-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">User Growth</h3>
+            <div class="chart-box"><canvas id="userGrowthChart"></canvas></div>
+          </div>
+          <div class="bg-white rounded-xl shadow-sm p-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Specialty Distribution</h3>
+            <div class="chart-box"><canvas id="specialtyChart"></canvas></div>
+          </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="bg-white rounded-xl shadow-sm p-6">
+          <h3 class="text-lg font-semibold text-gray-800 mb-4">Recent Activity</h3>
+          <div class="space-y-4" id="recentActivity"></div>
+        </div>
+      </section>
+
+      <!-- Users Section -->
+      <section id="users" class="section hidden">
+        <div class="mb-8">
+          <h2 class="text-3xl font-bold text-gray-800 mb-2">User Management</h2>
+          <p class="text-gray-600">Create and manage user accounts</p>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+          <h3 class="text-lg font-semibold text-gray-800 mb-4">Create New User</h3>
+          <form id="userForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+              <input type="email" name="email" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none" required>
+            </div>
+            <div class="flex items-end">
+              <button type="submit" class="btn-primary px-6 py-2 text-white rounded-lg font-medium">
+                <i class="fas fa-plus mr-2"></i>Create User
+              </button>
+            </div>
+          </form>
+          <div id="userMessage" class="mt-4 text-sm"></div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-800">All Users</h3>
+            <div id="usersPagination" class="text-sm text-gray-600"></div>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200" id="usersTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Doctors Section -->
+      <section id="doctors" class="section hidden">
+        <div class="mb-8">
+          <h2 class="text-3xl font-bold text-gray-800 mb-2">Doctor Management</h2>
+          <p class="text-gray-600">Create and manage doctor profiles</p>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+          <h3 class="text-lg font-semibold text-gray-800 mb-4">Create New Doctor</h3>
+          <form id="doctorForm" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+              <input type="email" name="email" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none" required>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+              <input type="text" name="firstName" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none" required>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+              <input type="text" name="lastName" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none" required>
+        </div>
+        <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Specialty</label>
+              <select name="specialty" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none" required>
+                <option value="">Select Specialty</option>
+            <option value="Cardiology">Cardiology</option>
+            <option value="Neurology">Neurology</option>
+            <option value="Pediatrics">Pediatrics</option>
+            <option value="Orthopedics">Orthopedics</option>
+            <option value="Dermatology">Dermatology</option>
+            <option value="Oncology">Oncology</option>
+            <option value="General Practice">General Practice</option>
+                <option value="Emergency Medicine">Emergency Medicine</option>
+                <option value="Internal Medicine">Internal Medicine</option>
+                <option value="Surgery">Surgery</option>
+                <option value="Psychiatry">Psychiatry</option>
+                <option value="Radiology">Radiology</option>
+                <option value="Anesthesiology">Anesthesiology</option>
+                <option value="Obstetrics & Gynecology">Obstetrics & Gynecology</option>
+          </select>
+        </div>
+        <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Contact Number</label>
+              <input type="tel" name="contactNumber" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none" required>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">License Number</label>
+              <input type="text" name="licenseNumber" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none" required>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Experience (Years)</label>
+              <input type="number" name="experience" min="0" max="50" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Medical Degree</label>
+              <input type="text" name="degree" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none" required>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Institution</label>
+              <input type="text" name="institution" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none" required>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Graduation Year</label>
+              <input type="number" name="graduationYear" min="1950" max="2024" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none" required>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Availability</label>
+              <select name="availability" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none">
+                <option value="Full-time">Full-time</option>
+                <option value="Part-time">Part-time</option>
+                <option value="On-call">On-call</option>
+                <option value="Consultant">Consultant</option>
+              </select>
+            </div>
+            <div class="md:col-span-2 lg:col-span-3 flex items-end">
+              <button type="submit" class="btn-primary px-6 py-2 text-white rounded-lg font-medium">
+                <i class="fas fa-plus mr-2"></i>Create Doctor
+              </button>
+            </div>
+          </form>
+          <div id="doctorMessage" class="mt-4 text-sm"></div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-800">All Doctors</h3>
+            <div id="doctorsPagination" class="text-sm text-gray-600"></div>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Doctor</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Specialty</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200" id="doctorsTableBody"></tbody>
+            </table>
+    </div>
+        </div>
+      </section>
+
+      <!-- Patients Section -->
+      <section id="patients" class="section hidden">
+        <div class="mb-8">
+          <h2 class="text-3xl font-bold text-gray-800 mb-2">Patient Management</h2>
+          <p class="text-gray-600">Create and manage patient profiles</p>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+          <h3 class="text-lg font-semibold text-gray-800 mb-4">Create New Patient</h3>
+          <form id="patientForm" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+              <input type="email" name="email" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none" required>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+              <input type="text" name="firstName" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none" required>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+              <input type="text" name="lastName" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none" required>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Date of Birth</label>
+              <input type="date" name="dateOfBirth" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none" required>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Gender</label>
+              <select name="gender" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none" required>
+                <option value="">Select Gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+                <option value="Prefer not to say">Prefer not to say</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Contact Number</label>
+              <input type="tel" name="contactNumber" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none" required>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Blood Type</label>
+              <select name="bloodType" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none" required>
+                <option value="">Select Blood Type</option>
+                <option value="A+">A+</option>
+                <option value="A-">A-</option>
+                <option value="B+">B+</option>
+                <option value="B-">B-</option>
+                <option value="AB+">AB+</option>
+                <option value="AB-">AB-</option>
+                <option value="O+">O+</option>
+                <option value="O-">O-</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">City</label>
+              <input type="text" name="city" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none" required>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">State</label>
+              <input type="text" name="state" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none" required>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">ZIP Code</label>
+              <input type="text" name="zipCode" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none" required>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Emergency Contact Name</label>
+              <input type="text" name="emergencyName" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none" required>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Emergency Contact Relationship</label>
+              <input type="text" name="emergencyRelationship" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none" required>
+        </div>
+        <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Emergency Contact Phone</label>
+              <input type="tel" name="emergencyPhone" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none" required>
+            </div>
+            <div class="md:col-span-2 lg:col-span-3 flex items-end">
+              <button type="submit" class="btn-primary px-6 py-2 text-white rounded-lg font-medium">
+                <i class="fas fa-plus mr-2"></i>Create Patient
+              </button>
+            </div>
+          </form>
+          <div id="patientMessage" class="mt-4 text-sm"></div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-800">All Patients</h3>
+            <div id="patientsPagination" class="text-sm text-gray-600"></div>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Patient</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Age</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Blood Type</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200" id="patientsTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Disease Monitoring Section -->
+      <section id="disease-monitoring" class="section hidden">
+        <div class="mb-8">
+          <h2 class="text-3xl font-bold text-gray-800 mb-2">Disease Monitoring & Outbreak Detection</h2>
+          <p class="text-gray-600">Monitor disease patterns, detect outbreaks, and manage hospital capacity</p>
+        </div>
+
+        <!-- Alert Banner -->
+        <div id="outbreakAlertBanner" class="hidden mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-lg">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center">
+              <div class="flex-shrink-0">
+                <i class="fas fa-exclamation-triangle text-red-500 text-xl"></i>
+              </div>
+              <div class="ml-3">
+                <h3 class="text-sm font-medium text-red-800">Active Outbreak Alert</h3>
+                <div class="mt-2 text-sm text-red-700">
+                  <p id="outbreakAlertMessage">Multiple outbreaks detected. Immediate action required.</p>
+                </div>
+              </div>
+            </div>
+            <button class="text-red-500 hover:text-red-700" onclick="hideOutbreakBanner()">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-gray-600">Total Disease Cases</p>
+                <p class="text-3xl font-bold text-gray-800" id="totalDiseaseCases">0</p>
+              </div>
+              <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-virus text-blue-600 text-xl"></i>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-gray-600">Active Outbreaks</p>
+                <p class="text-3xl font-bold text-red-600" id="activeOutbreaks">0</p>
+              </div>
+              <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-gray-600">Emergency Cases</p>
+                <p class="text-3xl font-bold text-orange-600" id="emergencyCases">0</p>
+              </div>
+              <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-ambulance text-orange-600 text-xl"></i>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-gray-600">Capacity Pressure</p>
+                <p class="text-3xl font-bold text-green-600" id="capacityPressure">Low</p>
+              </div>
+              <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-hospital text-green-600 text-xl"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Main Content Tabs -->
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+          <div class="border-b border-gray-200 mb-6">
+            <nav class="-mb-px flex space-x-8">
+              <button class="tab-button active py-2 px-1 border-b-2 border-blue-500 font-medium text-sm text-blue-600" data-tab="overview">
+                Overview
+              </button>
+              <button class="tab-button py-2 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300" data-tab="outbreaks">
+                Outbreaks
+              </button>
+              <button class="tab-button py-2 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300" data-tab="cases">
+                Disease Cases
+              </button>
+              <button class="tab-button py-2 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300" data-tab="analytics">
+                Analytics
+              </button>
+            </nav>
+          </div>
+
+          <!-- Overview Tab -->
+          <div id="overview-tab" class="tab-content">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <!-- Top Diseases Chart -->
+              <div class="bg-gray-50 rounded-lg p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Top Diseases (Last 30 Days)</h3>
+                <div class="h-64">
+                  <canvas id="topDiseasesChart"></canvas>
+                </div>
+              </div>
+
+              <!-- Disease Trends Chart -->
+              <div class="bg-gray-50 rounded-lg p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Disease Trends</h3>
+                <div class="h-64">
+                  <canvas id="diseaseTrendsChart"></canvas>
+                </div>
+              </div>
+            </div>
+
+            <!-- Recent Cases -->
+            <div class="mt-6">
+              <h3 class="text-lg font-semibold text-gray-800 mb-4">Recent Disease Cases</h3>
+              <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                  <thead class="bg-gray-50">
+                    <tr>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Patient</th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Disease</th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Confidence</th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Severity</th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                    </tr>
+                  </thead>
+                  <tbody class="bg-white divide-y divide-gray-200" id="recentCasesTable">
+                    <!-- Recent cases will be populated here -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Outbreaks Tab -->
+          <div id="outbreaks-tab" class="tab-content hidden">
+            <div class="flex items-center justify-between mb-6">
+              <h3 class="text-lg font-semibold text-gray-800">Active Outbreaks</h3>
+              <div class="flex space-x-3">
+                <button class="btn-primary px-4 py-2 text-white rounded-lg font-medium" onclick="detectOutbreaks()">
+                  <i class="fas fa-search mr-2"></i>Detect Outbreaks
+                </button>
+                <button class="bg-green-500 hover:bg-green-600 px-4 py-2 text-white rounded-lg font-medium" onclick="refreshOutbreaks()">
+                  <i class="fas fa-refresh mr-2"></i>Refresh
+                </button>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+              <!-- Outbreak List -->
+              <div class="bg-gray-50 rounded-lg p-6">
+                <h4 class="text-md font-semibold text-gray-800 mb-4">Current Outbreaks</h4>
+                <div class="space-y-4" id="outbreakList">
+                  <!-- Outbreaks will be populated here -->
+                </div>
+              </div>
+
+              <!-- Outbreak Details -->
+              <div class="bg-gray-50 rounded-lg p-6">
+                <h4 class="text-md font-semibold text-gray-800 mb-4">Outbreak Details</h4>
+                <div id="outbreakDetails">
+                  <p class="text-gray-500 text-center py-8">Select an outbreak to view details</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Outbreak Management -->
+            <div class="bg-gray-50 rounded-lg p-6">
+              <h4 class="text-md font-semibold text-gray-800 mb-4">Outbreak Management</h4>
+              <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-white rounded-lg p-4">
+                  <h5 class="font-medium text-gray-800 mb-2">Detection Settings</h5>
+                  <div class="space-y-2">
+                    <label class="block text-sm text-gray-600">Threshold (cases)</label>
+                    <input type="number" id="outbreakThreshold" value="3" min="1" max="20" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                  </div>
+                  <div class="space-y-2 mt-3">
+                    <label class="block text-sm text-gray-600">Time Window (days)</label>
+                    <input type="number" id="outbreakTimeWindow" value="7" min="1" max="30" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                  </div>
+                  <button class="w-full bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-lg text-sm mt-3" onclick="detectOutbreaks()">
+                    Detect Outbreaks
+                  </button>
+                </div>
+                
+                <div class="bg-white rounded-lg p-4">
+                  <h5 class="font-medium text-gray-800 mb-2">Manual Declaration</h5>
+                  <div class="space-y-2">
+                    <label class="block text-sm text-gray-600">Select Disease</label>
+                    <select id="manualOutbreakDisease" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                      <option value="">Loading diseases...</option>
+                    </select>
+                  </div>
+                  <div class="space-y-2 mt-3">
+                    <label class="block text-sm text-gray-600">Severity</label>
+                    <select id="manualOutbreakSeverity" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                      <option value="low">Low</option>
+                      <option value="medium" selected>Medium</option>
+                      <option value="high">High</option>
+                      <option value="critical">Critical</option>
+                    </select>
+                  </div>
+                  <div class="space-y-2 mt-3">
+                    <label class="block text-sm text-gray-600">Description</label>
+                    <textarea id="manualOutbreakDescription" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="Reason for declaration..."></textarea>
+                  </div>
+                  <button class="w-full bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg text-sm mt-3" onclick="declareManualOutbreak()">
+                    Declare Outbreak
+                  </button>
+                </div>
+                
+                <div class="bg-white rounded-lg p-4">
+                  <h5 class="font-medium text-gray-800 mb-2">Actions</h5>
+                  <div class="space-y-2">
+                    <button class="w-full bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-lg text-sm" onclick="refreshOutbreaks()">
+                      Refresh Data
+                    </button>
+                    <button class="w-full bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-2 rounded-lg text-sm" onclick="updateOutbreakSettings()">
+                      Update Settings
+                    </button>
+                    <button class="w-full bg-purple-500 hover:bg-purple-600 text-white px-3 py-2 rounded-lg text-sm" onclick="exportOutbreakData()">
+                      Export Data
+                    </button>
+                  </div>
+                </div>
+                
+                <div class="bg-white rounded-lg p-4">
+                  <h5 class="font-medium text-gray-800 mb-2">Alerts</h5>
+                  <div class="space-y-2">
+                    <label class="flex items-center">
+                      <input type="checkbox" id="emailAlerts" class="rounded border-gray-300 text-blue-600">
+                      <span class="ml-2 text-sm text-gray-600">Email Alerts</span>
+                    </label>
+                    <label class="flex items-center">
+                      <input type="checkbox" id="smsAlerts" class="rounded border-gray-300 text-blue-600">
+                      <span class="ml-2 text-sm text-gray-600">SMS Alerts</span>
+                    </label>
+                    <button class="w-full bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-2 rounded-lg text-sm mt-2" onclick="testNotification()">
+                      Test Notification
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cases Tab -->
+          <div id="cases-tab" class="tab-content hidden">
+            <div class="flex items-center justify-between mb-6">
+              <h3 class="text-lg font-semibold text-gray-800">Disease Cases</h3>
+              <div class="flex space-x-3">
+                <select id="diseaseFilter" class="px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                  <option value="">All Diseases</option>
+                </select>
+                <select id="severityFilter" class="px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                  <option value="">All Severities</option>
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                  <option value="critical">Critical</option>
+                </select>
+                <button class="bg-blue-500 hover:bg-blue-600 px-4 py-2 text-white rounded-lg font-medium" onclick="filterCases()">
+                  <i class="fas fa-filter mr-2"></i>Filter
+                </button>
+              </div>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Patient</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Disease</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Symptoms</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Confidence</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Severity</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200" id="diseaseCasesTable">
+                  <!-- Disease cases will be populated here -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Analytics Tab -->
+          <div id="analytics-tab" class="tab-content hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <!-- Hospital Impact -->
+              <div class="bg-gray-50 rounded-lg p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Hospital Impact</h3>
+                <div class="h-64">
+                  <canvas id="hospitalImpactChart"></canvas>
+                </div>
+              </div>
+
+              <!-- Capacity Analysis -->
+              <div class="bg-gray-50 rounded-lg p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Capacity Analysis</h3>
+                <div class="h-64">
+                  <canvas id="capacityChart"></canvas>
+                </div>
+              </div>
+            </div>
+
+            <!-- Recommendations -->
+            <div class="mt-6 bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+              <h3 class="text-lg font-semibold text-yellow-800 mb-4">Recommendations</h3>
+              <div id="recommendationsList">
+                <!-- Recommendations will be populated here -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Reports Section -->
+      <section id="reports" class="section hidden">
+        <div class="mb-8">
+          <h2 class="text-3xl font-bold text-gray-800 mb-2">Reports & Analytics</h2>
+          <p class="text-gray-600">Comprehensive insights and analytics</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="bg-white rounded-xl shadow-sm p-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Monthly Statistics</h3>
+            <div class="chart-box"><canvas id="monthlyStatsChart"></canvas></div>
+          </div>
+          <div class="bg-white rounded-xl shadow-sm p-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Geographic Distribution</h3>
+            <div class="chart-box"><canvas id="geoChart"></canvas></div>
+          </div>
+    </div>
+      </section>
+
+      <section id="feedback-admin" class="section hidden">
+        <div class="mb-8">
+          <h2 class="text-3xl font-bold text-gray-800 mb-2">Patient Feedback</h2>
+          <p class="text-gray-600">Review and prioritize feedback submitted by patients</p>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-800">Latest Feedback</h3>
+            <div class="flex items-center gap-3">
+              <select id="feedbackStatusFilter" class="px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                <option value="">All Statuses</option>
+                <option value="new">New</option>
+                <option value="in-review">In Review</option>
+                <option value="resolved">Resolved</option>
+              </select>
+              <select id="feedbackTypeFilter" class="px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                <option value="">All Types</option>
+                <option value="suggestion">Suggestion</option>
+                <option value="complaint">Complaint</option>
+                <option value="appreciation">Appreciation</option>
+                <option value="bug-report">Bug Report</option>
+              </select>
+              <button class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-lg text-sm" onclick="loadFeedback(1)">Apply</button>
+              <div id="feedbackPagination" class="text-sm text-gray-600"></div>
+            </div>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Patient</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Message</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200" id="feedbackTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    // Navigation
+    const navLinks = document.querySelectorAll('.nav-link');
+    const sections = document.querySelectorAll('.section');
+    const sidebar = document.getElementById('sidebar');
+    const menuBtn = document.getElementById('menuBtn');
+    const closeSidebar = document.getElementById('closeSidebar');
+
+    // Pagination state
+    const pagination = {
+      users: { page: 1, limit: 10 },
+      doctors: { page: 1, limit: 10 },
+      patients: { page: 1, limit: 10 },
+      feedback: { page: 1, limit: 10 }
+    };
+
+    // Mobile menu toggle
+    menuBtn.addEventListener('click', () => sidebar.classList.remove('-translate-x-full'));
+    closeSidebar.addEventListener('click', () => sidebar.classList.add('-translate-x-full'));
+
+    // Navigation
+    navLinks.forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const targetId = link.getAttribute('href').substring(1);
+        navLinks.forEach(l => l.classList.remove('active'));
+        link.classList.add('active');
+        sections.forEach(section => {
+          section.classList.add('hidden');
+          if (section.id === targetId) {
+            section.classList.remove('hidden');
+            section.classList.add('fade-in');
+          }
+        });
+        // Lazy load tables
+        if (targetId === 'users') loadUsers();
+        if (targetId === 'doctors') loadDoctors();
+        if (targetId === 'patients') loadPatients();
+        if (targetId === 'disease-monitoring') loadDiseaseMonitoring();
+        if (targetId === 'feedback-admin') loadFeedback();
+      });
+    });
+
+    // Logout
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      fetch('/api/admin/logout', { method: 'POST' })
+        .then(() => window.location.href = '/admin-login.html')
+        .catch(() => window.location.href = '/admin-login.html');
+    });
+
+    // Form submissions
+    document.getElementById('userForm').addEventListener('submit', handleUserForm);
+    document.getElementById('doctorForm').addEventListener('submit', handleDoctorForm);
+    document.getElementById('patientForm').addEventListener('submit', handlePatientForm);
+
+    async function handleUserForm(e) {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData);
+      try {
+        const response = await fetch('/api/admin/create-user', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+        const result = await response.json();
+        showMessage('userMessage', result.msg, response.ok);
+        if (response.ok) { e.target.reset(); loadStats(); loadUsers(); }
+      } catch (error) { showMessage('userMessage', error.message, false); }
+    }
+
+    async function handleDoctorForm(e) {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const data = Object.fromEntries(formData);
+      data.isDoctor = 'true';
+      try {
+        const response = await fetch('/api/admin/create-user', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+        const result = await response.json();
+        showMessage('doctorMessage', result.msg, response.ok);
+        if (response.ok) { e.target.reset(); loadStats(); loadDoctors(); }
+      } catch (error) { showMessage('doctorMessage', error.message, false); }
+    }
+
+    async function handlePatientForm(e) {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const data = Object.fromEntries(formData);
+      data.isPatient = 'true';
+      data.emergencyContact = { name: data.emergencyName, relationship: data.emergencyRelationship, phone: data.emergencyPhone };
+      data.address = { city: data.city, state: data.state, zipCode: data.zipCode };
+      try {
+        const response = await fetch('/api/admin/create-user', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+          const result = await response.json();
+        showMessage('patientMessage', result.msg, response.ok);
+        if (response.ok) { e.target.reset(); loadStats(); loadPatients(); }
+      } catch (error) { showMessage('patientMessage', error.message, false); }
+    }
+
+    function showMessage(elementId, message, isSuccess) {
+      const element = document.getElementById(elementId);
+      element.textContent = message || '';
+      element.className = `mt-4 text-sm ${isSuccess ? 'text-green-600' : 'text-red-600'}`;
+      setTimeout(() => { element.textContent = ''; element.className = 'mt-4 text-sm'; }, 4000);
+    }
+
+    // Dashboard stats
+    async function loadStats() {
+      try {
+        const res = await fetch('/api/admin/stats');
+        if (!res.ok) return;
+        const stats = await res.json();
+        document.getElementById('totalUsers').textContent = stats.totalUsers;
+        document.getElementById('totalDoctors').textContent = stats.totalDoctors;
+        document.getElementById('totalPatients').textContent = stats.totalPatients;
+      } catch (_) {}
+    }
+
+    // Table loaders (paginated)
+    async function loadUsers(page = pagination.users.page) {
+      pagination.users.page = page;
+      const res = await fetch(`/api/admin/users?page=${page}&limit=${pagination.users.limit}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      renderUsers(data);
+    }
+
+    async function loadDoctors(page = pagination.doctors.page) {
+      pagination.doctors.page = page;
+      const res = await fetch(`/api/admin/doctors?page=${page}&limit=${pagination.doctors.limit}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      renderDoctors(data);
+    }
+
+    async function loadPatients(page = pagination.patients.page) {
+      pagination.patients.page = page;
+      const res = await fetch(`/api/admin/patients?page=${page}&limit=${pagination.patients.limit}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      renderPatients(data);
+    }
+
+    async function loadFeedback(page = pagination.feedback.page) {
+      pagination.feedback.page = page;
+      const status = document.getElementById('feedbackStatusFilter')?.value || '';
+      const feedbackType = document.getElementById('feedbackTypeFilter')?.value || '';
+      const query = new URLSearchParams({
+        page: String(page),
+        limit: String(pagination.feedback.limit)
+      });
+      if (status) query.append('status', status);
+      if (feedbackType) query.append('feedbackType', feedbackType);
+
+      const res = await fetch(`/api/admin/feedback?${query.toString()}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      renderFeedback(data);
+    }
+
+    // Renderers
+    function renderUsers({ items, total, page, pages }) {
+      const tbody = document.getElementById('usersTableBody');
+      tbody.innerHTML = items.length ? items.map(u => `
+        <tr>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">${u.email}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${u.role}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm"><span class="px-2 py-1 rounded-full text-xs bg-gray-100">${u.status}</span></td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${formatDate(u.createdAt)}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-blue-600"><button class="hover:underline" data-user-id="${u._id}">View</button></td>
+        </tr>`).join('') : `<tr><td class="px-6 py-4 text-sm text-gray-500" colspan="5">No users found</td></tr>`;
+      document.getElementById('usersPagination').innerHTML = paginationControls(page, pages, (p) => loadUsers(p));
+    }
+
+    function renderDoctors({ items, total, page, pages }) {
+      const tbody = document.getElementById('doctorsTableBody');
+      tbody.innerHTML = items.length ? items.map(d => `
+        <tr>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">Dr. ${d.firstName} ${d.lastName} <span class="text-gray-500">(${d.userId?.email || ''})</span></td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${d.specialty}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${d.contactNumber}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm"><span class="px-2 py-1 rounded-full text-xs bg-gray-100">${d.status}</span></td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-blue-600"><button class="hover:underline" data-doc-id="${d._id}">View</button></td>
+        </tr>`).join('') : `<tr><td class="px-6 py-4 text-sm text-gray-500" colspan="5">No doctors found</td></tr>`;
+      document.getElementById('doctorsPagination').innerHTML = paginationControls(page, pages, (p) => loadDoctors(p));
+    }
+
+    function renderPatients({ items, total, page, pages }) {
+      const tbody = document.getElementById('patientsTableBody');
+      tbody.innerHTML = items.length ? items.map(p => `
+        <tr>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">${p.firstName} ${p.lastName} <span class="text-gray-500">(${p.userId?.email || ''})</span></td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${calcAge(p.dateOfBirth)}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${p.bloodType || '-'}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${p.contactNumber}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm"><span class="px-2 py-1 rounded-full text-xs bg-gray-100">${p.status}</span></td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-blue-600"><button class="hover:underline" data-patient-id="${p._id}">View</button></td>
+        </tr>`).join('') : `<tr><td class="px-6 py-4 text-sm text-gray-500" colspan="6">No patients found</td></tr>`;
+      document.getElementById('patientsPagination').innerHTML = paginationControls(page, pages, (p) => loadPatients(p));
+    }
+
+    function renderFeedback({ items, page, pages }) {
+      const tbody = document.getElementById('feedbackTableBody');
+      tbody.innerHTML = items.length ? items.map(item => `
+        <tr>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">${item.patientId ? `${item.patientId.firstName} ${item.patientId.lastName}` : 'Unknown'}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${item.feedbackType}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${item.category}</td>
+          <td class="px-6 py-4 text-sm text-gray-600" title="${item.message}">${item.message.length > 90 ? item.message.slice(0, 90) + '...' : item.message}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm"><span class="px-2 py-1 rounded-full text-xs ${item.status === 'resolved' ? 'bg-green-100 text-green-800' : item.status === 'in-review' ? 'bg-yellow-100 text-yellow-800' : 'bg-blue-100 text-blue-800'}">${item.status}</span></td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${formatDate(item.createdAt)}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+            <select onchange="updateFeedbackStatus('${item._id}', this.value)" class="px-2 py-1 border border-gray-300 rounded text-xs">
+              <option value="">Update</option>
+              <option value="in-review">In Review</option>
+              <option value="resolved">Resolved</option>
+              <option value="new">Mark New</option>
+            </select>
+          </td>
+        </tr>
+      `).join('') : `<tr><td class="px-6 py-4 text-sm text-gray-500" colspan="7">No feedback found</td></tr>`;
+      document.getElementById('feedbackPagination').innerHTML = paginationControls(page, pages, (p) => loadFeedback(p));
+    }
+
+    async function updateFeedbackStatus(feedbackId, status) {
+      if (!status) return;
+      try {
+        const res = await fetch(`/api/admin/feedback/${feedbackId}/status`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.msg || 'Failed to update status');
+        }
+        showNotification('Feedback Updated', `Status changed to ${status}`, 'success');
+        loadFeedback(pagination.feedback.page);
+      } catch (error) {
+        showNotification('Update Failed', error.message, 'error');
+      }
+    }
+
+    function paginationControls(page, pages, onChange) {
+      if (!pages || pages <= 1) return '';
+      const prevDisabled = page <= 1 ? 'opacity-50 pointer-events-none' : '';
+      const nextDisabled = page >= pages ? 'opacity-50 pointer-events-none' : '';
+      return `
+        <div class="flex items-center space-x-3">
+          <button class="px-3 py-1 border rounded ${prevDisabled}" id="prevBtn">Prev</button>
+          <span>Page ${page} of ${pages}</span>
+          <button class="px-3 py-1 border rounded ${nextDisabled}" id="nextBtn">Next</button>
+        </div>`;
+    }
+
+    // Attach pagination button events after render
+    document.addEventListener('click', (e) => {
+      if (e.target && e.target.id === 'prevBtn') {
+        if (!document.getElementById('users').classList.contains('hidden')) loadUsers(Math.max(1, pagination.users.page - 1));
+        if (!document.getElementById('doctors').classList.contains('hidden')) loadDoctors(Math.max(1, pagination.doctors.page - 1));
+        if (!document.getElementById('patients').classList.contains('hidden')) loadPatients(Math.max(1, pagination.patients.page - 1));
+        if (!document.getElementById('feedback-admin').classList.contains('hidden')) loadFeedback(Math.max(1, pagination.feedback.page - 1));
+      }
+      if (e.target && e.target.id === 'nextBtn') {
+        const container = !document.getElementById('users').classList.contains('hidden') ? 'users' : !document.getElementById('doctors').classList.contains('hidden') ? 'doctors' : !document.getElementById('patients').classList.contains('hidden') ? 'patients' : 'feedback';
+        const pag = pagination[container];
+        // We don't know total pages here; server returns rendered controls with disabled styles
+        // So simply increment; server will clamp via disabled state on next render
+        if (container === 'users') loadUsers(pag.page + 1);
+        if (container === 'doctors') loadDoctors(pag.page + 1);
+        if (container === 'patients') loadPatients(pag.page + 1);
+        if (container === 'feedback') loadFeedback(pag.page + 1);
+      }
+    });
+
+    function formatDate(dateStr) { const d = new Date(dateStr); return d.toLocaleDateString(); }
+    function calcAge(dob) { if (!dob) return '-'; const d = new Date(dob), t = new Date(); let a = t.getFullYear() - d.getFullYear(); const m = t.getMonth() - d.getMonth(); if (m < 0 || (m === 0 && t.getDate() < d.getDate())) a--; return a; }
+
+    // Initialize dashboard
+    loadStats();
+    initializeCharts();
+
+    function initializeCharts() {
+      const userCtx = document.getElementById('userGrowthChart').getContext('2d');
+      new Chart(userCtx, { type: 'line', data: { labels: ['Jan','Feb','Mar','Apr','May','Jun'], datasets: [{ label: 'New Users', data: [12,19,3,5,2,3], borderColor: '#667eea', backgroundColor: 'rgba(102,126,234,0.1)', tension: 0.4 }] }, options: { responsive: true, maintainAspectRatio: true, aspectRatio: 2, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } } });
+      const specialtyCtx = document.getElementById('specialtyChart').getContext('2d');
+      new Chart(specialtyCtx, { type: 'doughnut', data: { labels: ['Cardiology','Neurology','Pediatrics','Orthopedics','General Practice'], datasets: [{ data: [12,19,3,5,2], backgroundColor: ['#667eea','#764ba2','#f093fb','#f5576c','#4facfe'] }] }, options: { responsive: true, maintainAspectRatio: true, aspectRatio: 2, plugins: { legend: { position: 'bottom' } } } });
+    }
+
+    // Disease Monitoring Functions
+    let diseaseCharts = {};
+
+    // Tab handling for disease monitoring
+    document.addEventListener('click', (e) => {
+      if (e.target.classList.contains('tab-button')) {
+        const tabId = e.target.getAttribute('data-tab');
+        
+        // Update tab buttons
+        document.querySelectorAll('.tab-button').forEach(btn => {
+          btn.classList.remove('active', 'border-blue-500', 'text-blue-600');
+          btn.classList.add('border-transparent', 'text-gray-500');
+        });
+        e.target.classList.add('active', 'border-blue-500', 'text-blue-600');
+        e.target.classList.remove('border-transparent', 'text-gray-500');
+        
+        // Update tab content
+        document.querySelectorAll('.tab-content').forEach(content => {
+          content.classList.add('hidden');
+        });
+        document.getElementById(tabId + '-tab').classList.remove('hidden');
+        
+        // Load tab-specific data
+        if (tabId === 'overview') loadOverviewData();
+        if (tabId === 'outbreaks') loadOutbreakData();
+        if (tabId === 'cases') loadCasesData();
+        if (tabId === 'analytics') loadAnalyticsData();
+      }
+    });
+
+    // Load disease monitoring section
+    async function loadDiseaseMonitoring() {
+      try {
+        await loadDiseaseStats();
+        await loadOverviewData();
+        await loadAvailableDiseases();
+        loadSettings();
+      } catch (error) {
+        console.error('Error loading disease monitoring:', error);
+      }
+    }
+
+    // Load disease statistics
+    async function loadDiseaseStats() {
+      try {
+        const response = await fetch('/api/admin/disease/disease-stats');
+        if (response.ok) {
+          const data = await response.json();
+          updateDiseaseStats(data);
+        }
+      } catch (error) {
+        console.error('Error loading disease stats:', error);
+      }
+    }
+
+    // Update disease statistics display
+    function updateDiseaseStats(data) {
+      document.getElementById('totalDiseaseCases').textContent = data.overallStats?.totalCases || 0;
+      document.getElementById('activeOutbreaks').textContent = data.overallStats?.outbreakRelatedCases || 0;
+      document.getElementById('emergencyCases').textContent = data.overallStats?.emergencyCases || 0;
+      
+      // Update capacity pressure
+      const emergencyRate = data.overallStats?.emergencyCases / (data.overallStats?.totalCases || 1);
+      let pressure = 'Low';
+      let pressureColor = 'text-green-600';
+      
+      if (emergencyRate > 0.3) {
+        pressure = 'High';
+        pressureColor = 'text-red-600';
+      } else if (emergencyRate > 0.15) {
+        pressure = 'Medium';
+        pressureColor = 'text-yellow-600';
+      }
+      
+      const pressureElement = document.getElementById('capacityPressure');
+      pressureElement.textContent = pressure;
+      pressureElement.className = `text-3xl font-bold ${pressureColor}`;
+
+      // Show outbreak alert if needed
+      if (data.potentialOutbreaks && data.potentialOutbreaks.length > 0) {
+        showOutbreakBanner(data.potentialOutbreaks.length);
+      }
+    }
+
+    // Load overview data
+    async function loadOverviewData() {
+      try {
+        const [statsResponse, casesResponse] = await Promise.all([
+          fetch('/api/admin/disease/disease-stats'),
+          fetch('/api/admin/disease/disease-cases?limit=10')
+        ]);
+
+        if (statsResponse.ok && casesResponse.ok) {
+          const statsData = await statsResponse.json();
+          const casesData = await casesResponse.json();
+          
+          updateTopDiseasesChart(statsData.topDiseases);
+          updateDiseaseTrendsChart(statsData.dailyCases);
+          updateRecentCasesTable(casesData.diseaseCases);
+        }
+      } catch (error) {
+        console.error('Error loading overview data:', error);
+      }
+    }
+
+    // Update top diseases chart
+    function updateTopDiseasesChart(topDiseases) {
+      const ctx = document.getElementById('topDiseasesChart');
+      if (!ctx) return;
+      
+      if (diseaseCharts.topDiseases) {
+        diseaseCharts.topDiseases.destroy();
+      }
+      
+      const labels = topDiseases?.map(d => d._id) || [];
+      const data = topDiseases?.map(d => d.totalCases) || [];
+      
+      diseaseCharts.topDiseases = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Cases',
+            data: data,
+            backgroundColor: '#3b82f6'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          }
+        }
+      });
+    }
+
+    // Update disease trends chart
+    function updateDiseaseTrendsChart(dailyCases) {
+      const ctx = document.getElementById('diseaseTrendsChart');
+      if (!ctx) return;
+      
+      if (diseaseCharts.trends) {
+        diseaseCharts.trends.destroy();
+      }
+      
+      const labels = dailyCases?.map(d => `${d._id.day}/${d._id.month}`) || [];
+      const cases = dailyCases?.map(d => d.cases) || [];
+      const emergencies = dailyCases?.map(d => d.emergencyCases) || [];
+      
+      diseaseCharts.trends = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Total Cases',
+            data: cases,
+            borderColor: '#3b82f6',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)'
+          }, {
+            label: 'Emergency Cases',
+            data: emergencies,
+            borderColor: '#ef4444',
+            backgroundColor: 'rgba(239, 68, 68, 0.1)'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom' }
+          }
+        }
+      });
+    }
+
+    // Update recent cases table
+    function updateRecentCasesTable(cases) {
+      const tbody = document.getElementById('recentCasesTable');
+      if (!tbody) return;
+      
+      if (!cases || cases.length === 0) {
+        tbody.innerHTML = '<tr><td class="px-6 py-4 text-sm text-gray-500 text-center" colspan="5">No recent cases found</td></tr>';
+        return;
+      }
+      
+      tbody.innerHTML = cases.map(caseItem => {
+        const severityColors = {
+          low: 'text-green-600 bg-green-100',
+          medium: 'text-yellow-600 bg-yellow-100',
+          high: 'text-orange-600 bg-orange-100',
+          critical: 'text-red-600 bg-red-100'
+        };
+        
+        return `
+          <tr>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <div class="font-medium">${caseItem.patientId?.firstName || 'Unknown'} ${caseItem.patientId?.lastName || ''}</div>
+              <div class="text-xs text-gray-500">PID: ${caseItem.patientId?.pid || 'N/A'}</div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+              ${caseItem.diseaseName}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+              ${Math.round(caseItem.confidence * 100)}%
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span class="px-2 py-1 text-xs rounded-full ${severityColors[caseItem.severity]}">
+                ${caseItem.severity}
+              </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+              ${new Date(caseItem.caseDate).toLocaleDateString()}
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Load outbreak data
+    async function loadOutbreakData() {
+      try {
+        const response = await fetch('/api/admin/disease/outbreaks');
+        if (response.ok) {
+          const data = await response.json();
+          updateOutbreakList(data.outbreaks);
+        }
+      } catch (error) {
+        console.error('Error loading outbreak data:', error);
+      }
+    }
+
+    // Update outbreak list
+    function updateOutbreakList(outbreaks) {
+      const container = document.getElementById('outbreakList');
+      if (!container) return;
+      
+      if (!outbreaks || outbreaks.length === 0) {
+        container.innerHTML = '<p class="text-gray-500 text-center py-4">No active outbreaks detected</p>';
+        return;
+      }
+      
+      container.innerHTML = outbreaks.map(outbreak => `
+        <div class="bg-white rounded-lg p-4 border border-gray-200 cursor-pointer hover:bg-gray-50" onclick="selectOutbreak('${outbreak._id}')">
+          <div class="flex items-center justify-between mb-2">
+            <h5 class="font-medium text-gray-800">${outbreak.diseaseName}</h5>
+            <span class="px-2 py-1 text-xs rounded-full ${outbreak.severity === 'critical' ? 'bg-red-100 text-red-800' : outbreak.severity === 'high' ? 'bg-orange-100 text-orange-800' : 'bg-yellow-100 text-yellow-800'}">
+              ${outbreak.severity}
+            </span>
+          </div>
+          <p class="text-sm text-gray-600">${outbreak.totalCases} cases in ${outbreak.timeWindow} days</p>
+          <p class="text-xs text-gray-500 mt-1">Started: ${new Date(outbreak.startDate).toLocaleDateString()}</p>
+        </div>
+      `).join('');
+    }
+
+    // Select outbreak for details
+    function selectOutbreak(outbreakId) {
+      // Simple implementation - in a real app, fetch detailed outbreak data
+      document.getElementById('outbreakDetails').innerHTML = `
+        <div class="space-y-4">
+          <h5 class="font-medium text-gray-800">Outbreak Details</h5>
+          <p class="text-sm text-gray-600">Outbreak ID: ${outbreakId}</p>
+          <p class="text-sm text-gray-600">Loading detailed information...</p>
+        </div>
+      `;
+    }
+
+    // Load cases data
+    async function loadCasesData() {
+      try {
+        const response = await fetch('/api/admin/disease/disease-cases?limit=50');
+        if (response.ok) {
+          const data = await response.json();
+          updateCasesTable(data.diseaseCases);
+          populateDiseaseFilter(data.diseaseCases);
+        }
+      } catch (error) {
+        console.error('Error loading cases data:', error);
+      }
+    }
+
+    // Update cases table
+    function updateCasesTable(cases) {
+      const tbody = document.getElementById('diseaseCasesTable');
+      if (!tbody) return;
+      
+      if (!cases || cases.length === 0) {
+        tbody.innerHTML = '<tr><td class="px-6 py-4 text-sm text-gray-500 text-center" colspan="7">No cases found</td></tr>';
+        return;
+      }
+      
+      tbody.innerHTML = cases.map(caseItem => {
+        const severityColors = {
+          low: 'text-green-600 bg-green-100',
+          medium: 'text-yellow-600 bg-yellow-100',
+          high: 'text-orange-600 bg-orange-100',
+          critical: 'text-red-600 bg-red-100'
+        };
+        
+        return `
+          <tr>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <div class="font-medium">${caseItem.patientId?.firstName || 'Unknown'} ${caseItem.patientId?.lastName || ''}</div>
+              <div class="text-xs text-gray-500">PID: ${caseItem.patientId?.pid || 'N/A'}</div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+              ${caseItem.diseaseName}
+            </td>
+            <td class="px-6 py-4 text-sm text-gray-600">
+              ${caseItem.symptoms.slice(0, 3).join(', ')}${caseItem.symptoms.length > 3 ? '...' : ''}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+              ${Math.round(caseItem.confidence * 100)}%
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span class="px-2 py-1 text-xs rounded-full ${severityColors[caseItem.severity]}">
+                ${caseItem.severity}
+              </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+              ${new Date(caseItem.caseDate).toLocaleDateString()}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm">
+              <button class="text-blue-600 hover:text-blue-800" onclick="viewCaseDetails('${caseItem._id}')">
+                View
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Populate disease filter dropdown
+    function populateDiseaseFilter(cases) {
+      const select = document.getElementById('diseaseFilter');
+      if (!select) return;
+      
+      const diseases = [...new Set(cases.map(c => c.diseaseName))];
+      select.innerHTML = '<option value="">All Diseases</option>' + 
+        diseases.map(disease => `<option value="${disease}">${disease}</option>`).join('');
+    }
+
+    // Load analytics data
+    async function loadAnalyticsData() {
+      try {
+        const response = await fetch('/api/admin/disease/hospital-impact');
+        if (response.ok) {
+          const data = await response.json();
+          updateHospitalImpactChart(data.emergencyImpact);
+          updateCapacityChart(data.capacityPressure);
+          updateRecommendations(data.recommendations);
+        }
+      } catch (error) {
+        console.error('Error loading analytics data:', error);
+      }
+    }
+
+    // Update hospital impact chart
+    function updateHospitalImpactChart(emergencyImpact) {
+      const ctx = document.getElementById('hospitalImpactChart');
+      if (!ctx) return;
+      
+      if (diseaseCharts.hospitalImpact) {
+        diseaseCharts.hospitalImpact.destroy();
+      }
+      
+      const labels = emergencyImpact?.map(d => `${d._id.day}/${d._id.month}`) || [];
+      const emergencies = emergencyImpact?.map(d => d.emergencyCases) || [];
+      const critical = emergencyImpact?.map(d => d.criticalCases) || [];
+      
+      diseaseCharts.hospitalImpact = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Emergency Cases',
+            data: emergencies,
+            borderColor: '#ef4444',
+            backgroundColor: 'rgba(239, 68, 68, 0.1)'
+          }, {
+            label: 'Critical Cases',
+            data: critical,
+            borderColor: '#dc2626',
+            backgroundColor: 'rgba(220, 38, 38, 0.1)'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom' }
+          }
+        }
+      });
+    }
+
+    // Update capacity chart
+    function updateCapacityChart(capacityData) {
+      const ctx = document.getElementById('capacityChart');
+      if (!ctx) return;
+      
+      if (diseaseCharts.capacity) {
+        diseaseCharts.capacity.destroy();
+      }
+      
+      const data = [
+        capacityData?.totalCases || 0,
+        capacityData?.emergencyCases || 0,
+        capacityData?.criticalCases || 0,
+        capacityData?.unresolvedCases || 0
+      ];
+      
+      diseaseCharts.capacity = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Total Cases', 'Emergency Cases', 'Critical Cases', 'Unresolved Cases'],
+          datasets: [{
+            data: data,
+            backgroundColor: ['#3b82f6', '#ef4444', '#dc2626', '#f59e0b']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom' }
+          }
+        }
+      });
+    }
+
+    // Update recommendations
+    function updateRecommendations(recommendations) {
+      const container = document.getElementById('recommendationsList');
+      if (!container) return;
+      
+      if (!recommendations || recommendations.length === 0) {
+        container.innerHTML = '<p class="text-gray-500">No recommendations at this time.</p>';
+        return;
+      }
+      
+      container.innerHTML = recommendations.map(rec => `
+        <div class="flex items-start space-x-2 mb-2">
+          <i class="fas fa-lightbulb text-yellow-600 mt-1"></i>
+          <span class="text-yellow-800">${rec}</span>
+        </div>
+      `).join('');
+    }
+
+    // Outbreak management functions
+    
+
+    function updateOutbreakSettings() {
+      alert('Outbreak settings updated successfully');
+    }
+
+    function exportOutbreakData() {
+      alert('Outbreak data export initiated');
+    }
+
+    function filterCases() {
+      const disease = document.getElementById('diseaseFilter').value;
+      const severity = document.getElementById('severityFilter').value;
+      
+      let url = '/api/admin/disease/disease-cases?limit=50';
+      if (disease) url += `&diseaseName=${encodeURIComponent(disease)}`;
+      if (severity) url += `&severity=${severity}`;
+      
+      fetch(url)
+      .then(response => response.json())
+      .then(data => updateCasesTable(data.diseaseCases))
+      .catch(error => console.error('Error filtering cases:', error));
+    }
+
+    function viewCaseDetails(caseId) {
+      alert('Case details for ID: ' + caseId);
+    }
+
+    function showOutbreakBanner(count) {
+      const banner = document.getElementById('outbreakAlertBanner');
+      const message = document.getElementById('outbreakAlertMessage');
+      
+      message.textContent = `${count} potential outbreak${count > 1 ? 's' : ''} detected. Immediate action may be required.`;
+      banner.classList.remove('hidden');
+    }
+
+    function hideOutbreakBanner() {
+      document.getElementById('outbreakAlertBanner').classList.add('hidden');
+    }
+
+    // Load available diseases for manual outbreak declaration
+    async function loadAvailableDiseases() {
+      try {
+        const response = await fetch('/api/admin/disease/available-diseases');
+        if (response.ok) {
+          const data = await response.json();
+          const select = document.getElementById('manualOutbreakDisease');
+          if (select) {
+            select.innerHTML = '<option value="">Select a disease...</option>' + 
+              data.diseases.map(disease => 
+                `<option value="${disease.name}">${disease.name} (${disease.totalCases} cases)</option>`
+              ).join('');
+          }
+        }
+      } catch (error) {
+        console.error('Error loading available diseases:', error);
+      }
+    }
+
+    // Declare manual outbreak
+    async function declareManualOutbreak() {
+      const diseaseName = document.getElementById('manualOutbreakDisease').value;
+      const severity = document.getElementById('manualOutbreakSeverity').value;
+      const description = document.getElementById('manualOutbreakDescription').value;
+
+      if (!diseaseName) {
+        alert('Please select a disease to declare as an outbreak');
+        return;
+      }
+
+      if (!confirm(`Are you sure you want to declare an outbreak for "${diseaseName}"? This will flag all existing cases of this disease.`)) {
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/admin/disease/outbreaks/manual', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            diseaseName: diseaseName,
+            severity: severity,
+            description: description
+          })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          alert(`✅ Outbreak declared successfully for ${diseaseName}!\n\nUpdated ${data.updatedCases} existing cases.\nTotal affected cases: ${data.affectedCases}`);
+          
+          // Clear form
+          document.getElementById('manualOutbreakDisease').value = '';
+          document.getElementById('manualOutbreakDescription').value = '';
+          
+          // Refresh data
+          loadOutbreakData();
+          loadDiseaseStats();
+        } else {
+          alert(`❌ Error: ${data.msg}`);
+        }
+      } catch (error) {
+        console.error('Error declaring manual outbreak:', error);
+        alert('❌ Error declaring outbreak. Please try again.');
+      }
+    }
+
+    // Test notification system
+    function testNotification() {
+      if ('Notification' in window) {
+        if (Notification.permission === 'granted') {
+          new Notification('Health Portal Alert', {
+            body: 'This is a test notification from the Health Portal system.',
+            icon: '/favicon.ico'
+          });
+        } else if (Notification.permission !== 'denied') {
+          Notification.requestPermission().then(permission => {
+            if (permission === 'granted') {
+              new Notification('Health Portal Alert', {
+                body: 'This is a test notification from the Health Portal system.',
+                icon: '/favicon.ico'
+              });
+            }
+          });
+        } else {
+          alert('Notifications are blocked. Please enable them in your browser settings.');
+        }
+      } else {
+        alert('This browser does not support notifications.');
+      }
+    }
+
+    // Enhanced notification system
+    function showNotification(title, message, type = 'info') {
+      // Browser notification
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification(title, {
+          body: message,
+          icon: '/favicon.ico'
+        });
+      }
+
+      // In-page notification
+      const notification = document.createElement('div');
+      notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 max-w-sm ${
+        type === 'success' ? 'bg-green-500' : 
+        type === 'error' ? 'bg-red-500' : 
+        type === 'warning' ? 'bg-yellow-500' : 'bg-blue-500'
+      } text-white`;
+      
+      notification.innerHTML = `
+        <div class="flex items-center justify-between">
+          <div>
+            <h4 class="font-semibold">${title}</h4>
+            <p class="text-sm">${message}</p>
+          </div>
+          <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-white hover:text-gray-200">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      `;
+      
+      document.body.appendChild(notification);
+      
+      // Auto remove after 5 seconds
+      setTimeout(() => {
+        if (notification.parentElement) {
+          notification.remove();
+        }
+      }, 5000);
+    }
+
+    // Enhanced outbreak detection
+    async function detectOutbreaks() {
+      const threshold = document.getElementById('outbreakThreshold').value;
+      const timeWindow = document.getElementById('outbreakTimeWindow').value;
+      
+      try {
+        const response = await fetch('/api/admin/disease/outbreaks/detect', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ threshold: parseInt(threshold), timeWindow: parseInt(timeWindow) })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          if (data.count > 0) {
+            showNotification('Outbreak Detected!', `${data.count} new outbreak(s) detected. Check the outbreaks tab for details.`, 'warning');
+          } else {
+            showNotification('Detection Complete', 'No new outbreaks detected with current settings.', 'info');
+          }
+          
+          loadOutbreakData();
+          loadDiseaseStats();
+        } else {
+          showNotification('Detection Failed', 'Error detecting outbreaks. Please try again.', 'error');
+        }
+      } catch (error) {
+        console.error('Error detecting outbreaks:', error);
+        showNotification('Detection Failed', 'Error detecting outbreaks. Please try again.', 'error');
+      }
+    }
+
+    // Enhanced refresh function
+    async function refreshOutbreaks() {
+      showNotification('Refreshing...', 'Updating outbreak data...', 'info');
+      
+      try {
+        await Promise.all([
+          loadOutbreakData(),
+          loadDiseaseStats(),
+          loadAvailableDiseases()
+        ]);
+        
+        showNotification('Refresh Complete', 'All data has been updated successfully.', 'success');
+      } catch (error) {
+        console.error('Error refreshing data:', error);
+        showNotification('Refresh Failed', 'Error updating data. Please try again.', 'error');
+      }
+    }
+
+    // Enhanced settings update
+    function updateOutbreakSettings() {
+      const threshold = document.getElementById('outbreakThreshold').value;
+      const timeWindow = document.getElementById('outbreakTimeWindow').value;
+      
+      // Save to localStorage for persistence
+      localStorage.setItem('outbreakThreshold', threshold);
+      localStorage.setItem('outbreakTimeWindow', timeWindow);
+      
+      showNotification('Settings Updated', `Threshold: ${threshold} cases, Time Window: ${timeWindow} days`, 'success');
+    }
+
+    // Enhanced export function
+    function exportOutbreakData() {
+      // Create a simple CSV export
+      const csvContent = "data:text/csv;charset=utf-8," + 
+        "Disease,Total Cases,Emergency Cases,Severity,Start Date,Status\n" +
+        "Influenza,5,2,high,2025-09-21,active\n" +
+        "Seasonal Flu,1,1,critical,2025-09-21,active\n" +
+        "General Malaise,1,0,low,2025-09-21,resolved";
+      
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `outbreak_data_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      showNotification('Export Complete', 'Outbreak data exported successfully.', 'success');
+    }
+
+    // Load settings from localStorage on page load
+    function loadSettings() {
+      const savedThreshold = localStorage.getItem('outbreakThreshold');
+      const savedTimeWindow = localStorage.getItem('outbreakTimeWindow');
+      
+      if (savedThreshold) {
+        document.getElementById('outbreakThreshold').value = savedThreshold;
+      }
+      if (savedTimeWindow) {
+        document.getElementById('outbreakTimeWindow').value = savedTimeWindow;
+      }
+    }
+
+    async function loadAdminNotifications() {
+      const countEl = document.getElementById('adminNotifCount');
+      const listEl = document.getElementById('adminNotifList');
+      try {
+        const [feedbackRes, outbreakRes] = await Promise.all([
+          fetch('/api/admin/feedback?limit=3&status=new'),
+          fetch('/api/admin/disease/outbreaks/stats')
+        ]);
+        const [feedbackData, outbreakData] = await Promise.all([feedbackRes.json(), outbreakRes.json()]);
+        const items = [];
+        const newFeedback = (feedbackData.items || []).length;
+        const activeOutbreaks = outbreakData.summary?.activeOutbreaks || 0;
+
+        if (newFeedback > 0) items.push(`${newFeedback} new feedback item(s) pending review`);
+        if (activeOutbreaks > 0) items.push(`${activeOutbreaks} active outbreak(s) require monitoring`);
+        if (items.length === 0) items.push('No urgent admin notifications');
+
+        countEl.textContent = String(items[0] === 'No urgent admin notifications' ? 0 : items.length);
+        listEl.innerHTML = items.map(i => `<li class="border-b border-gray-100 pb-2">${i}</li>`).join('');
+      } catch (error) {
+        countEl.textContent = '0';
+        listEl.innerHTML = '<li class="text-red-500">Unable to load notifications</li>';
+      }
+    }
+
+    function toggleAdminNotifications() {
+      const panel = document.getElementById('adminNotifPanel');
+      if (!panel) return;
+      panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+    }
+
+    loadAdminNotifications();
+  </script>
+</body>
+</html>

@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Patient Module - Final v12</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background-color:#f8fafc; overflow-x:hidden;}
+    .sidebar {background-color:#0d6efd;min-height:100vh;color:white;padding-top:20px;
+      position:fixed;top:0;left:-250px;width:250px;transition:0.3s;z-index:1000;}
+    .sidebar a {color:white;text-decoration:none;display:block;padding:12px 20px;margin:5px 10px;border-radius:5px;}
+    .sidebar a:hover {background:#0b5ed7;}
+    .burger-btn {font-size:24px;cursor:pointer;}
+    .topbar {display:flex;justify-content:space-between;align-items:center;background:#fff;padding:10px 20px;
+      box-shadow:0 2px 5px rgba(0,0,0,0.05);}
+    .topbar .right {display:flex;align-items:center;gap:20px;}
+    .profile-btn {cursor:pointer;font-weight:500;}
+    .content {padding:20px;}
+    .section-title {margin-bottom:20px;font-weight:600;color:#0d6efd;}
+    .card {border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.05);}
+    .arrow-btn {cursor:pointer;font-size:20px;color:#0d6efd;margin-left:10px;}
+  </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div id="sidebar" class="sidebar">
+  <h4 class="text-center mb-4">Patient Panel</h4>
+  <a href="#" onclick="showSection('dashboard')">Dashboard</a>
+  <a href="#" onclick="showSection('appointments')">Appointments</a>
+  <a href="#" onclick="showSection('reports')">Reports</a>
+  <a href="#" onclick="showSection('prescriptions')">Prescriptions</a>
+  <a href="#" onclick="showSection('mydoctors')">My Doctors</a>
+  <a href="#" onclick="showSection('feedback')">Feedback</a>
+</div>
+
+<!-- Topbar -->
+<div class="topbar">
+  <span class="burger-btn" onclick="toggleSidebar()">&#9776;</span>
+  <span class="fw-bold">Patient Portal</span>
+  <div class="right"><span class="profile-btn" onclick="showSection('profile')">My Profile</span></div>
+</div>
+
+<div class="content">
+
+  <!-- Dashboard -->
+  <div id="dashboard" class="content-section">
+    <h3 class="section-title">Dashboard</h3>
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+      <div class="col"><div class="card h-100 p-3"><h5>Upcoming Appointments <span id="toggleAppt" class="arrow-btn" onclick="toggleAppointments()">&#9660;</span></h5><div id="earliestAppt"></div><div id="moreAppointments" style="display:none;"><hr><ul class="list-group list-group-flush" id="appointmentListMini"></ul></div></div></div>
+      <div class="col"><div class="card h-100 p-3"><h5>Health Summary</h5><p>Blood Pressure: <b>120/80</b></p><p>Blood Sugar: <b>95 mg/dL</b></p><p>Weight: <b>70kg</b></p></div></div>
+      <div class="col"><div class="card h-100 p-3"><h5>Reminders</h5><ul><li>Take morning medication</li><li>Check-up in 5 days</li></ul></div></div>
+      <div class="col"><div class="card h-100 p-3"><h5>Current Prescriptions</h5><p>2 active prescriptions</p><button class="btn btn-outline-info btn-sm" onclick="showSection('prescriptions')">View Details</button></div></div>
+      <div class="col"><div class="card h-100 p-3"><h5>Recent Reports</h5><p>Blood Test — 10 Aug 2025</p><p>X-Ray — 5 Aug 2025</p></div></div>
+      <div class="col"><div class="card h-100 p-3"><h5>Health Tips</h5><p>Stay hydrated & walk daily.</p><p>Eat fruits for immunity.</p></div></div>
+    </div>
+  </div>
+
+  <!-- Appointments -->
+  <div id="appointments" class="content-section" style="display:none;">
+    <h3 class="section-title">Appointments</h3>
+    <table class="table table-hover"><thead><tr><th>Doctor</th><th>Specialization</th><th>Date</th><th>Time</th><th></th></tr></thead>
+      <tbody id="appointmentList"></tbody></table>
+  </div>
+
+  <!-- Reports -->
+  <div id="reports" class="content-section" style="display:none;">
+    <h3 class="section-title">Reports & Documents</h3>
+    <table class="table table-striped"><thead><tr><th>Report</th><th>Date</th><th>Download</th><th>Share</th></tr></thead>
+      <tbody id="reportList"></tbody></table>
+    <button class="btn btn-primary mt-3" onclick="openUploadModal()">Upload Report</button>
+  </div>
+
+  <!-- Prescriptions -->
+  <div id="prescriptions" class="content-section" style="display:none;">
+    <h3 class="section-title">Prescriptions</h3>
+    <table class="table table-bordered"><thead><tr><th>Date Prescribed</th><th>Department</th><th>Action</th></tr></thead>
+      <tbody id="prescriptionList"></tbody></table>
+  </div>
+
+  <!-- My Doctors -->
+  <div id="mydoctors" class="content-section" style="display:none;">
+    <h3 class="section-title">My Doctors</h3>
+    <table class="table table-bordered"><thead><tr><th>Doctor ID</th><th>Doctor Name</th><th>Specialization</th><th>Doctor Since</th><th>Action</th></tr></thead>
+      <tbody id="doctorList"></tbody></table>
+    <button class="btn btn-primary mt-2" onclick="addDoctor()">+ Add Doctor</button>
+  </div>
+
+  <!-- Feedback -->
+  <div id="feedback" class="content-section" style="display:none;">
+    <h3 class="section-title">Feedback</h3>
+    <textarea class="form-control mb-3" placeholder="Share your feedback..."></textarea>
+    <button class="btn btn-primary">Submit</button>
+  </div>
+
+  <!-- Profile -->
+  <div id="profile" class="content-section" style="display:none;">
+    <h3 class="section-title">My Profile</h3>
+    <form id="profileForm">
+      <div class="mb-3"><label>Name</label><input type="text" class="form-control" value="John Doe" disabled></div>
+      <div class="mb-3"><label>Age</label><input type="number" class="form-control" value="30" disabled></div>
+      <div class="mb-3"><label>Patient ID</label><input type="text" class="form-control" value="P12345" disabled readonly></div>
+      <div class="mb-3"><label>Gender</label><select class="form-select" disabled><option>Male</option><option>Female</option><option>Other</option></select></div>
+      <div class="mb-3"><label>Location</label><input type="text" class="form-control" value="Hyderabad" disabled></div>
+      <button type="button" class="btn btn-secondary" onclick="enableEdit()">Edit</button>
+      <button type="submit" class="btn btn-primary" style="display:none;" id="saveBtn">Save</button>
+      <button type="button" class="btn btn-danger" onclick="logout()">Logout</button>
+    </form>
+  </div>
+
+</div>
+
+<!-- Modals -->
+<div class="modal fade" id="uploadModal"><div class="modal-dialog"><div class="modal-content">
+<div class="modal-header"><h5>Upload Report</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+<div class="modal-body"><input type="file" id="reportFile" class="form-control" accept=".pdf,.jpg,.png"></div>
+<div class="modal-footer"><button class="btn btn-primary" onclick="uploadReport()">Upload</button></div>
+</div></div></div>
+
+<div class="modal fade" id="rescheduleModal"><div class="modal-dialog"><div class="modal-content">
+<div class="modal-header"><h5>Reschedule Appointment</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+<div class="modal-body">
+<label>New Date (only 2 days prior allowed)</label>
+<input type="date" id="newDate" class="form-control mb-2">
+<label>Time</label><input type="time" id="newTime" class="form-control mb-2">
+</div>
+<div class="modal-footer"><button class="btn btn-primary" onclick="confirmReschedule()">Confirm</button></div>
+</div></div></div>
+
+<div class="modal fade" id="prescriptionModal"><div class="modal-dialog"><div class="modal-content">
+<div class="modal-header"><h5>Prescription Details</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+<div class="modal-body" id="prescriptionDetails"></div>
+<div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Close</button></div>
+</div></div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// Dummy data
+const appointments=[{doctor:"Smith",spec:"Cardiology",date:"20 Aug 2025",time:"10:30 AM"}, {doctor:"Johnson",spec:"Dermatology",date:"25 Aug 2025",time:"2:00 PM"}];
+const reports=[{name:"Blood Test Report",date:"10 Aug 2025"}];
+const prescriptions=[{date:"12 Aug 2025",dept:"Cardiology",meds:["Paracetamol 500mg - Twice daily","Atorvastatin 10mg - Night"]},{date:"08 Aug 2025",dept:"Dermatology",meds:["Cetirizine 10mg - Daily","Hydrocortisone cream - Apply"]}];
+const doctors=[{id:"D101",name:"Dr. Smith",spec:"Cardiology",since:"15 Aug 2023"}];
+
+let rescheduleIndex=null;
+
+// Dashboard
+function loadEarliestAppointment(){let a=appointments[0];document.getElementById("earliestAppt").innerHTML=`<p><b>${a.date}, ${a.time}</b></p><p class="text-muted">Dr. ${a.doctor} (${a.spec})</p>`;}
+loadEarliestAppointment();
+function toggleAppointments(){let box=document.getElementById("moreAppointments");let arrow=document.getElementById("toggleAppt");
+if(box.style.display==="none"){document.getElementById("appointmentListMini").innerHTML=appointments.slice(1).map(a=>`<li class="list-group-item">${a.date}, ${a.time} - Dr. ${a.doctor} (${a.spec})</li>`).join('');box.style.display="block";arrow.innerHTML="&#9650;";}else{box.style.display="none";arrow.innerHTML="&#9660;";}}
+
+// Appointments Fill
+document.getElementById("appointmentList").innerHTML=appointments.map((a,i)=>`<tr><td>Dr. ${a.doctor}</td><td>${a.spec}</td><td>${a.date}</td><td>${a.time}</td><td><button class="btn btn-primary btn-sm" id="resBtn${i}" onclick="openReschedule(${i})">Reschedule</button></td></tr>`).join('');
+
+function openReschedule(i){rescheduleIndex=i;let appt=appointments[i];let parts=appt.date.split(" ");let sched=new Date(`${parts[1]} ${parts}, ${parts[1]}`);
+let resDate=new Date(sched);resDate.setDate(resDate.getDate()-2);let fixed=resDate.toISOString().split("T");
+document.getElementById("newDate").value=fixed;document.getElementById("newDate").setAttribute("min",fixed);document.getElementById("newDate").setAttribute("max",fixed);
+new bootstrap.Modal(document.getElementById('rescheduleModal')).show();}
+function confirmReschedule(){let d=document.getElementById("newDate").value,t=document.getElementById("newTime").value;if(d&&t){alert("Reschedule request sent!");let btn=document.getElementById("resBtn"+rescheduleIndex);btn.innerText="Pending Approval";btn.disabled=true;bootstrap.Modal.getInstance(document.getElementById('rescheduleModal')).hide();}else alert("Select time");}
+
+// Reports
+function renderReports(){document.getElementById("reportList").innerHTML=reports.map(r=>`<tr><td>${r.name}</td><td>${r.date}</td><td><button class='btn btn-outline-primary btn-sm'>Download</button></td><td><button class='btn btn-outline-success btn-sm'>Share</button></td></tr>`).join('');}
+renderReports();
+function openUploadModal(){new bootstrap.Modal(document.getElementById('uploadModal')).show();}
+function uploadReport(){let file=document.getElementById("reportFile").files[0];if(file){let today=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});reports.push({name:file.name,date:today});renderReports();bootstrap.Modal.getInstance(document.getElementById('uploadModal')).hide();alert("Report uploaded!");}else alert("Select file");}
+
+// Prescriptions
+document.getElementById("prescriptionList").innerHTML=prescriptions.map((p,i)=>`<tr><td>${p.date}</td><td>${p.dept}</td><td><button class='btn btn-outline-info btn-sm' onclick="viewPrescription(${i})">View</button></td></tr>`).join('');
+function viewPrescription(i){let p=prescriptions[i];document.getElementById("prescriptionDetails").innerHTML=`<p><b>Date:</b> ${p.date}</p><p><b>Department:</b> ${p.dept}</p><ul>${p.meds.map(m=>`<li>${m}</li>`).join('')}</ul>`;new bootstrap.Modal(document.getElementById('prescriptionModal')).show();}
+
+// Doctors
+function renderDoctors(){document.getElementById("doctorList").innerHTML=doctors.map((d,i)=>`<tr><td>${d.id}</td><td>${d.name}</td><td>${d.spec}</td><td>${d.since}</td><td><button class='btn btn-danger btn-sm' onclick="removeDoctor(${i})">Remove</button></td></tr>`).join('');}
+renderDoctors();
+function removeDoctor(i){if(confirm("Remove "+doctors[i].name+"?")){doctors.splice(i,1);renderDoctors();}}
+function addDoctor(){const newDoc={id:"D"+Math.floor(Math.random()*1000),name:"Dr. New",spec:"General",since:"18 Aug 2025"};doctors.push(newDoc);renderDoctors();alert("Doctor added!");}
+
+// Profile
+function enableEdit(){document.querySelectorAll('#profileForm input:not([readonly]), #profileForm select').forEach(f=>{if(!f.readOnly) f.disabled=false;});document.getElementById("saveBtn").style.display='inline-block';}
+document.getElementById("profileForm").addEventListener('submit',e=>{e.preventDefault();document.querySelectorAll('#profileForm input, #profileForm select').forEach(f=>f.disabled=true);document.getElementById("saveBtn").style.display='none';alert("Profile updated");});
+function logout(){alert("Logged out");}
+
+// Sidebar
+function toggleSidebar(){let bar=document.getElementById("sidebar");bar.style.left= bar.style.left==="0px"?"-250px":"0px";}
+function closeSidebar(){document.getElementById("sidebar").style.left="-250px";}
+document.addEventListener('click',e=>{const sidebar=document.getElementById("sidebar");const burger=document.querySelector(".burger-btn");if(sidebar.style.left==="0px"&&!sidebar.contains(e.target)&&!burger.contains(e.target)){closeSidebar();}});
+function showSection(id){document.querySelectorAll('.content-section').forEach(s=>s.style.display='none');document.getElementById(id).style.display='block';closeSidebar();}
+</script>
+</body>
+</html>
